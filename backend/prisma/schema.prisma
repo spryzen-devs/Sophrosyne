@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String     @id @default(uuid()) @db.Uuid
+  fullName       String
+  email          String     @unique
+  passwordHash   String
+  role           Role
+  phone          String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  resolvedAlerts Alert[]    @relation("ResolvedBy")
+  auditLogs      AuditLog[]
+  patients       Patient[]  @relation("CreatedBy")
+
+  @@index([email])
+}
+
+model Patient {
+  id               String        @id @default(uuid()) @db.Uuid
+  patientCode      String        @unique
+  firstName        String
+  lastName         String
+  gender           Gender
+  dateOfBirth      DateTime
+  bloodGroup       String?
+  phone            String?
+  emergencyContact String?
+  address          String?
+  status           PatientStatus @default(ACTIVE)
+  createdBy        String        @db.Uuid
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  alerts           Alert[]
+  devices          Device[]
+  creator          User          @relation("CreatedBy", fields: [createdBy], references: [id])
+
+  @@index([patientCode])
+  @@index([createdBy])
+}
+
+model Device {
+  id              String       @id @default(uuid()) @db.Uuid
+  deviceCode      String       @unique
+  patientId       String?      @db.Uuid
+  firmwareVersion String?
+  hardwareVersion String?
+  batteryLevel    Int?
+  ipAddress       String?
+  lastSeen        DateTime?
+  status          DeviceStatus @default(OFFLINE)
+  registeredAt    DateTime     @default(now())
+  patient         Patient?     @relation(fields: [patientId], references: [id])
+  telemetry       Telemetry[]
+
+  @@index([deviceCode])
+  @@index([patientId])
+}
+
+model Telemetry {
+  id           BigInt      @id @default(autoincrement())
+  deviceId     String      @db.Uuid
+  heartRate    Float?
+  spo2         Float?
+  accelX       Float?
+  accelY       Float?
+  accelZ       Float?
+  motionState  MotionState @default(RESTING)
+  fallDetected Boolean     @default(false)
+  battery      Int?
+  recordedAt   DateTime    @default(now())
+  alert        Alert?
+  device       Device      @relation(fields: [deviceId], references: [id])
+
+  @@index([deviceId])
+  @@index([recordedAt])
+}
+
+model Alert {
+  id          String     @id @default(uuid()) @db.Uuid
+  telemetryId BigInt?    @unique
+  patientId   String     @db.Uuid
+  severity    Severity
+  alertType   AlertType
+  message     String
+  resolved    Boolean    @default(false)
+  resolvedBy  String?    @db.Uuid
+  createdAt   DateTime   @default(now())
+  patient     Patient    @relation(fields: [patientId], references: [id])
+  resolver    User?      @relation("ResolvedBy", fields: [resolvedBy], references: [id])
+  telemetry   Telemetry? @relation(fields: [telemetryId], references: [id])
+
+  @@index([patientId])
+  @@index([telemetryId])
+  @@index([resolvedBy])
+}
+
+model AuditLog {
+  id        BigInt   @id @default(autoincrement())
+  userId    String   @db.Uuid
+  action    String
+  entity    String
+  entityId  String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum Role {
+  ADMIN
+  DOCTOR
+  TECHNICIAN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum PatientStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+}
+
+enum MotionState {
+  RESTING
+  WALKING
+  RUNNING
+  FALL
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertType {
+  HEART_RATE
+  SPO2
+  FALL
+}

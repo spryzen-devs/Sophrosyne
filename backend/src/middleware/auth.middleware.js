@@ -57,16 +57,36 @@ export const authorize = (...roles) => {
  */
 export const validate = (schema) => (req, res, next) => {
   try {
-    schema.parse({
+    const parsed = schema.parse({
       body: req.body,
       query: req.query,
       params: req.params,
     });
+
+    // Replace original data with parsed and transformed data
+    if (parsed.body) req.body = parsed.body;
+    if (parsed.query) {
+      // Clear existing query parameters and merge parsed ones to avoid "getter only" error
+      for (const key in req.query) {
+        delete req.query[key];
+      }
+      Object.assign(req.query, parsed.query);
+    }
+    if (parsed.params) {
+      // Clear existing params and merge parsed ones
+      for (const key in req.params) {
+        delete req.params[key];
+      }
+      Object.assign(req.params, parsed.params);
+    }
+
     next();
   } catch (error) {
-    const validationError = new Error(
-      error.errors.map((err) => err.message).join(', ')
-    );
+    let message = error.message;
+    if (error.errors && Array.isArray(error.errors)) {
+      message = error.errors.map((err) => err.message).join(', ');
+    }
+    const validationError = new Error(message);
     validationError.statusCode = 400;
     next(validationError);
   }

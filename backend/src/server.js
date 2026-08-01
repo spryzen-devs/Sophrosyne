@@ -1,6 +1,7 @@
 import app from './app.js';
 import { env } from './config/env.js';
 import prisma from './config/prisma.js';
+import { initSocket } from './websocket/socket.js';
 
 const PORT = env.PORT || 5000;
 
@@ -9,6 +10,10 @@ const PORT = env.PORT || 5000;
  */
 const server = app.listen(PORT, async () => {
   console.log(`🚀 Sentinel Backend running in ${env.NODE_ENV} mode on port ${PORT}`);
+  
+  // Initialize Socket.IO
+  initSocket(server);
+  console.log('🔌 Socket.IO initialized');
   
   try {
     // Verify database connection on startup

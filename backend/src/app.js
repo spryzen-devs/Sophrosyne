@@ -6,6 +6,10 @@ import { env } from './config/env.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 import healthRoutes from './routes/healthRoutes.js';
 import authRoutes from './routes/auth.routes.js';
+import patientRoutes from './routes/patient.routes.js';
+import deviceRoutes from './routes/device.routes.js';
+import telemetryRoutes from './routes/telemetry.routes.js';
+import alertRoutes from './routes/alert.routes.js';
 
 const app = express();
 
@@ -37,6 +41,10 @@ app.use(express.urlencoded({ extended: true }));
 // API v1 Routes
 app.use('/api/v1', healthRoutes);
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/patients', patientRoutes);
+app.use('/api/v1/devices', deviceRoutes);
+app.use('/api/v1/telemetry', telemetryRoutes);
+app.use('/api/v1/alerts', alertRoutes);
 
 // Root path
 app.get('/', (req, res) => {

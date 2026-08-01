@@ -76,7 +76,7 @@ model Telemetry {
   fallDetected Boolean     @default(false)
   battery      Int?
   recordedAt   DateTime    @default(now())
-  alert        Alert?
+  alerts       Alert[]
   device       Device      @relation(fields: [deviceId], references: [id])
 
   @@index([deviceId])
@@ -85,13 +85,14 @@ model Telemetry {
 
 model Alert {
   id          String     @id @default(uuid()) @db.Uuid
-  telemetryId BigInt?    @unique
+  telemetryId BigInt?
   patientId   String     @db.Uuid
   severity    Severity
   alertType   AlertType
   message     String
   resolved    Boolean    @default(false)
   resolvedBy  String?    @db.Uuid
+  resolvedAt  DateTime?
   createdAt   DateTime   @default(now())
   patient     Patient    @relation(fields: [patientId], references: [id])
   resolver    User?      @relation("ResolvedBy", fields: [resolvedBy], references: [id])
@@ -153,7 +154,12 @@ enum Severity {
 }
 
 enum AlertType {
-  HEART_RATE
-  SPO2
-  FALL
+    HIGH_HEART_RATE
+    LOW_HEART_RATE
+    LOW_SPO2
+    HIGH_TEMPERATURE
+    FALL_DETECTED
+    LOW_BATTERY
+    DEVICE_OFFLINE
+    DEVICE_TAMPERED
 }

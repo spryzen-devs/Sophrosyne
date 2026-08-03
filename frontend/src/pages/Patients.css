@@ -1,0 +1,36 @@
+.patients-page__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.patients-page__toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.add-patient-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.add-patient-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 767px) {
+  .patients-page__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .add-patient-form__row {
+    grid-template-columns: 1fr;
+  }
+}

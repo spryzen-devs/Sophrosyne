@@ -1,0 +1,20 @@
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot--online {
+  background-color: var(--green);
+}
+
+.status-dot--offline {
+  background-color: var(--text-tertiary);
+}
+
+.status-dot--sm {
+  width: 6px;
+  height: 6px;
+}

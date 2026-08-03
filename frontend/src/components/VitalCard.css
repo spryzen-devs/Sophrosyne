@@ -1,0 +1,76 @@
+.vital-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  background-color: var(--white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  min-width: 120px;
+}
+
+.vital-card--warning {
+  border-color: var(--yellow);
+  background-color: var(--yellow-light);
+}
+
+.vital-card--critical {
+  border-color: var(--red);
+  background-color: var(--red-light);
+}
+
+.vital-card__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vital-card__value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.vital-card__value {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 40px;
+  color: var(--text-primary);
+}
+
+.vital-card--warning .vital-card__value {
+  color: #7A6400;
+}
+
+.vital-card--critical .vital-card__value {
+  color: var(--red);
+}
+
+.vital-card__unit {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+
+.vital-card--sm .vital-card__value {
+  font-size: 24px;
+  line-height: 32px;
+}
+
+/* Battery bar */
+.vital-card__bar {
+  height: 4px;
+  width: 100%;
+  background-color: var(--border-light);
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.vital-card__bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 300ms ease;
+}

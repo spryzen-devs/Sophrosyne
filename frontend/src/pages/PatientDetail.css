@@ -1,0 +1,119 @@
+.patient-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.patient-detail__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.patient-detail__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: background-color 150ms ease;
+}
+
+.patient-detail__back:hover {
+  background-color: var(--white);
+}
+
+.patient-detail__title-group {
+  flex: 1;
+}
+
+.patient-detail__name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.patient-detail__code {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.patient-detail__info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.patient-detail__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.patient-detail__field-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.patient-detail__field-value {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.patient-detail__vitals-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.patient-detail__device-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--surface);
+  border-radius: var(--radius-md);
+}
+
+.patient-detail__device-code {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.patient-detail__device-meta {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 1279px) {
+  .patient-detail__info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .patient-detail__vitals-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .patient-detail__info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .patient-detail__vitals-row {
+    grid-template-columns: 1fr;
+  }
+}

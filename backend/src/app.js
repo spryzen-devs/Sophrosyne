@@ -10,6 +10,7 @@ import patientRoutes from './routes/patient.routes.js';
 import deviceRoutes from './routes/device.routes.js';
 import telemetryRoutes from './routes/telemetry.routes.js';
 import alertRoutes from './routes/alert.routes.js';
+import dashboardRoutes from './routes/dashboard.routes.js';
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use('/api/v1/patients', patientRoutes);
 app.use('/api/v1/devices', deviceRoutes);
 app.use('/api/v1/telemetry', telemetryRoutes);
 app.use('/api/v1/alerts', alertRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 // Root path
 app.get('/', (req, res) => {

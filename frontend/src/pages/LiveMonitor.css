@@ -1,0 +1,178 @@
+.live-monitor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Alert banner */
+.live-monitor__alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: var(--red-light);
+  border-left: 4px solid var(--red);
+  border-radius: var(--radius-md);
+  animation: modal-fade-in 150ms ease;
+}
+
+.live-monitor__alert-icon {
+  color: var(--red);
+  flex-shrink: 0;
+}
+
+.live-monitor__alert-content {
+  flex: 1;
+}
+
+.live-monitor__alert-patient {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.live-monitor__alert-message {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.live-monitor__alert-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Patient grid */
+.live-monitor__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Patient card */
+.monitor-card {
+  background-color: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  transition: all 200ms ease;
+}
+
+.monitor-card--fall {
+  background-color: var(--red-light);
+  border-left: 4px solid var(--red);
+}
+
+.monitor-card--highlighted {
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--yellow);
+}
+
+.monitor-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.monitor-card__name {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.monitor-card__device-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.monitor-card__device-code {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.monitor-card__code {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.monitor-card__vitals {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.monitor-card__vital {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background-color: var(--surface);
+  border-radius: var(--radius-sm);
+}
+
+.monitor-card--fall .monitor-card__vital {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.monitor-card__vital--warning {
+  background-color: var(--yellow-light);
+}
+
+.monitor-card__vital--critical {
+  background-color: var(--red-light);
+}
+
+.monitor-card__vital-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.monitor-card__vital-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 32px;
+}
+
+.monitor-card__vital--warning .monitor-card__vital-value {
+  color: #7A6400;
+}
+
+.monitor-card__vital--critical .monitor-card__vital-value {
+  color: var(--red);
+}
+
+.monitor-card__vital-unit {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+
+.monitor-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.monitor-card__timestamp {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.monitor-card__motion {
+  font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 1279px) {
+  .live-monitor__grid {
+    grid-template-columns: 1fr;
+  }
+}

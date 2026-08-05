@@ -1,0 +1,26 @@
+.devices-page__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.devices-page__toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.register-device-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 767px) {
+  .devices-page__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

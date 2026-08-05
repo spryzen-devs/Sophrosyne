@@ -1,0 +1,70 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+/* Severity variants */
+.badge--critical {
+  color: var(--red);
+  background-color: var(--red-light);
+}
+
+.badge--high {
+  color: var(--orange);
+  background-color: var(--orange-light);
+}
+
+.badge--medium {
+  color: #7A6400;
+  background-color: var(--yellow-light);
+}
+
+.badge--low {
+  color: var(--text-secondary);
+  background-color: var(--surface);
+}
+
+/* Status variants */
+.badge--active,
+.badge--online {
+  color: var(--green);
+  background-color: var(--green-light);
+}
+
+.badge--inactive,
+.badge--offline {
+  color: var(--text-secondary);
+  background-color: var(--surface);
+}
+
+.badge--resolved {
+  color: var(--text-tertiary);
+  background-color: var(--surface);
+}
+
+/* Motion states */
+.badge--resting {
+  color: var(--text-secondary);
+  background-color: var(--surface);
+}
+
+.badge--walking {
+  color: var(--blue);
+  background-color: var(--blue-light);
+}
+
+.badge--running {
+  color: var(--orange);
+  background-color: var(--orange-light);
+}
+
+.badge--fall {
+  color: var(--red);
+  background-color: var(--red-light);
+}

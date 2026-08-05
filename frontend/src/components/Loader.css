@@ -1,0 +1,25 @@
+.loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+
+.loader__spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-light);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: loader-spin 0.7s linear infinite;
+}
+
+.loader__spinner--sm {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+}
+
+@keyframes loader-spin {
+  to { transform: rotate(360deg); }
+}

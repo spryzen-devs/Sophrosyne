@@ -1,0 +1,117 @@
+.device-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.device-detail__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.device-detail__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: background-color 150ms ease;
+}
+
+.device-detail__back:hover {
+  background-color: var(--white);
+}
+
+.device-detail__title-group {
+  flex: 1;
+}
+
+.device-detail__name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.device-detail__info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.device-detail__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.device-detail__field-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.device-detail__field-value {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.device-detail__assign {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.device-detail__assign-select {
+  flex: 1;
+}
+
+.device-detail__chart-controls {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.device-detail__time-btn {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background-color: var(--white);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.device-detail__time-btn--active {
+  background-color: var(--blue-light);
+  color: var(--blue);
+  border-color: var(--blue-light);
+}
+
+.device-detail__time-btn:hover:not(.device-detail__time-btn--active) {
+  background-color: var(--surface);
+}
+
+@media (max-width: 1279px) {
+  .device-detail__info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .device-detail__info-grid {
+    grid-template-columns: 1fr;
+  }
+}

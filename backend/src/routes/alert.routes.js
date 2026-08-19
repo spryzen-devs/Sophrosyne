@@ -24,7 +24,7 @@ router.get('/:id', alertController.getAlertById);
 // GET /api/v1/alerts/patient/:patientId - Get alerts for a patient
 router.get('/patient/:patientId', validate(getAlertsQuerySchema), alertController.getPatientAlerts);
 
-// PATCH /api/v1/alerts/:id/resolve - Resolve alert (Only ADMIN and DOCTOR)
-router.patch('/:id/resolve', authorize('ADMIN', 'DOCTOR'), alertController.resolveAlert);
+// PATCH /api/v1/alerts/:id/resolve - Resolve alert (Only DOCTOR)
+router.patch('/:id/resolve', authorize('DOCTOR'), alertController.resolveAlert);
 
 export default router;

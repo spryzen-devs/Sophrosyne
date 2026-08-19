@@ -22,10 +22,10 @@ router.get('/', validate(getPatientsQuerySchema), patientController.getAllPatien
 // GET /api/v1/patients/:id - Get patient by ID
 router.get('/:id', patientController.getPatientById);
 
-// POST /api/v1/patients - Create patient (Only ADMIN and DOCTOR)
+// POST /api/v1/patients - Create patient (Only ADMIN)
 router.post(
   '/',
-  authorize('ADMIN', 'DOCTOR'),
+  authorize('ADMIN'),
   validate(createPatientSchema),
   patientController.createPatient
 );

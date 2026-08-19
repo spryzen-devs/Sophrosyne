@@ -11,6 +11,7 @@ export const recordTelemetrySchema = z.object({
     deviceCode: z.string().min(1, 'Device code is required'),
     heartRate: z.number().nullable().optional(),
     spo2: z.number().nullable().optional(),
+    temperature: z.number().nullable().optional(),
     accelX: z.number().nullable().optional(),
     accelY: z.number().nullable().optional(),
     accelZ: z.number().nullable().optional(),

@@ -12,12 +12,38 @@ class PatientService {
    */
   async createPatient(patientData, createdBy) {
     const patientCode = await this._generatePatientCode();
-    
+
+    let { name, firstName, lastName, age, dateOfBirth, ...rest } = patientData;
+
+    // Handle name split / consolidation
+    if (name && (!firstName || !lastName)) {
+      const parts = name.trim().split(' ');
+      firstName = parts[0] || 'Unknown';
+      lastName = parts.slice(1).join(' ') || 'Patient';
+    } else if (!name && firstName && lastName) {
+      name = `${firstName} ${lastName}`;
+    }
+
+    // Handle age / dateOfBirth
+    let dobDate = dateOfBirth ? new Date(dateOfBirth) : new Date();
+    if (age && !dateOfBirth) {
+      dobDate = new Date();
+      dobDate.setFullYear(dobDate.getFullYear() - age);
+    } else if (dateOfBirth && !age) {
+      const diffMs = Date.now() - dobDate.getTime();
+      const ageDate = new Date(diffMs);
+      age = Math.abs(ageDate.getUTCFullYear() - 1970);
+    }
+
     return patientRepository.create({
-      ...patientData,
+      ...rest,
+      name,
+      firstName: firstName || 'Unknown',
+      lastName: lastName || 'Patient',
+      age: age || 30,
       patientCode,
       createdBy,
-      dateOfBirth: new Date(patientData.dateOfBirth),
+      dateOfBirth: dobDate,
     });
   }
 

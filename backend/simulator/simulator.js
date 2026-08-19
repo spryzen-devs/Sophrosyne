@@ -24,6 +24,7 @@ class TelemetrySimulator {
         profile,
         currentHeartRate: profile.baseHeartRate,
         currentSpo2: profile.baseSpo2,
+        currentTemperature: profile.baseTemperature || 36.6,
         currentBattery: profile.baseBattery,
         accel: { x: 0, y: 0, z: 9.8 } // Start at rest
       });
@@ -42,20 +43,24 @@ class TelemetrySimulator {
     // Normal fluctuations
     let heartRate = device.currentHeartRate + (Math.random() * 4 - 2);
     let spo2 = device.currentSpo2 + (Math.random() * 0.4 - 0.2);
-    
+    let temperature = device.currentTemperature + (Math.random() * 0.2 - 0.1);
+
     // Clamp values
     heartRate = Math.max(60, Math.min(100, heartRate));
     spo2 = Math.max(95, Math.min(100, spo2));
+    temperature = Math.max(36.0, Math.min(37.5, temperature));
 
     // Override for emergencies
     if (isEmergency) {
       const type = Math.random();
-      if (type < 0.4) {
+      if (type < 0.3) {
         heartRate = 130 + Math.random() * 20; // High HR
-      } else if (type < 0.7) {
+      } else if (type < 0.5) {
         heartRate = 35 - Math.random() * 5;   // Low HR
-      } else {
+      } else if (type < 0.8) {
         spo2 = 85 - Math.random() * 5;        // Low SpO2
+      } else {
+        temperature = 38.5 + Math.random() * 1.5; // High Temperature (Fever)
       }
     }
 
@@ -71,11 +76,13 @@ class TelemetrySimulator {
     // Update current values for next iteration
     device.currentHeartRate = heartRate;
     device.currentSpo2 = spo2;
+    device.currentTemperature = temperature;
 
     const payload = {
       deviceCode: device.deviceCode,
       heartRate: Math.round(heartRate),
       spo2: Math.round(spo2),
+      temperature: parseFloat(temperature.toFixed(1)),
       accelX: parseFloat(accelX.toFixed(2)),
       accelY: parseFloat(accelY.toFixed(2)),
       accelZ: parseFloat(accelZ.toFixed(2)),
@@ -98,12 +105,14 @@ class TelemetrySimulator {
       console.log(`[${payload.deviceCode}]`);
       console.log(`  HR: ${payload.heartRate} BPM`);
       console.log(`  SpO2: ${payload.spo2}%`);
+      console.log(`  Temp: ${payload.temperature}°C`);
       console.log(`  Battery: ${payload.battery}%`);
       console.log(`  Status: SENT (${response.status})`);
       
       if (payload.fallDetected) console.log('  ⚠️ ALERT: FALL DETECTED!');
       if (payload.heartRate > 120 || payload.heartRate < 40) console.log(`  ⚠️ ALERT: HEART RATE (${payload.heartRate})`);
       if (payload.spo2 < 90) console.log(`  ⚠️ ALERT: LOW SPO2 (${payload.spo2})`);
+      if (payload.temperature > 38.0) console.log(`  ⚠️ ALERT: HIGH TEMPERATURE (${payload.temperature}°C)`);
       
     } catch (error) {
       console.error(`[${payload.deviceCode}] Error:`, error.response?.data?.message || error.message);

@@ -8,119 +8,128 @@ datasource db {
 }
 
 model User {
-  id             String     @id @default(uuid()) @db.Uuid
-  fullName       String
-  email          String     @unique
-  passwordHash   String
-  role           Role
-  phone          String?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  id             String     @id @default(uuid()) @db.Uuid @map("user_id")
+  fullName       String     @map("name")
+  email          String     @unique @map("email")
+  passwordHash   String     @map("password")
+  role           Role       @map("role")
+  phone          String?    @map("phone")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
   resolvedAlerts Alert[]    @relation("ResolvedBy")
   auditLogs      AuditLog[]
   patients       Patient[]  @relation("CreatedBy")
 
   @@index([email])
+  @@map("users")
 }
 
 model Patient {
-  id               String        @id @default(uuid()) @db.Uuid
-  patientCode      String        @unique
-  firstName        String
-  lastName         String
-  gender           Gender
-  dateOfBirth      DateTime
-  bloodGroup       String?
-  phone            String?
-  emergencyContact String?
-  address          String?
-  status           PatientStatus @default(ACTIVE)
-  createdBy        String        @db.Uuid
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id               String        @id @default(uuid()) @db.Uuid @map("patient_id")
+  patientCode      String        @unique @map("patient_code")
+  firstName        String        @map("first_name")
+  lastName         String        @map("last_name")
+  name             String?       @map("name")
+  age              Int?          @map("age")
+  gender           Gender        @map("gender")
+  dateOfBirth      DateTime      @map("date_of_birth")
+  bloodGroup       String?       @map("blood_group")
+  phone            String?       @map("phone")
+  emergencyContact String?       @map("emergency_contact")
+  address          String?       @map("address")
+  status           PatientStatus @default(ACTIVE) @map("status")
+  createdBy        String        @db.Uuid @map("created_by")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
   alerts           Alert[]
-  devices          Device[]
+  device           Device?
   creator          User          @relation("CreatedBy", fields: [createdBy], references: [id])
 
   @@index([patientCode])
   @@index([createdBy])
+  @@map("patients")
 }
 
 model Device {
-  id              String       @id @default(uuid()) @db.Uuid
-  deviceCode      String       @unique
-  patientId       String?      @db.Uuid
-  firmwareVersion String?
-  hardwareVersion String?
-  batteryLevel    Int?
-  ipAddress       String?
-  lastSeen        DateTime?
-  status          DeviceStatus @default(OFFLINE)
-  registeredAt    DateTime     @default(now())
+  id              String       @id @default(uuid()) @db.Uuid @map("device_id")
+  deviceCode      String       @unique @map("device_code")
+  patientId       String?      @unique @db.Uuid @map("patient_id")
+  firmwareVersion String?      @map("firmware_version")
+  hardwareVersion String?      @map("hardware_version")
+  batteryLevel    Int?         @map("battery_lvl")
+  ipAddress       String?      @map("ip_address")
+  lastSeen        DateTime?    @map("last_seen")
+  status          DeviceStatus @default(OFFLINE) @map("status")
+  registeredAt    DateTime     @default(now()) @map("created_at")
   patient         Patient?     @relation(fields: [patientId], references: [id])
   telemetry       Telemetry[]
 
   @@index([deviceCode])
   @@index([patientId])
+  @@map("devices")
 }
 
 model Telemetry {
-  id           BigInt      @id @default(autoincrement())
-  deviceId     String      @db.Uuid
-  heartRate    Float?
-  spo2         Float?
-  accelX       Float?
-  accelY       Float?
-  accelZ       Float?
-  motionState  MotionState @default(RESTING)
-  fallDetected Boolean     @default(false)
-  battery      Int?
-  recordedAt   DateTime    @default(now())
-  alerts       Alert[]
+  id           BigInt      @id @default(autoincrement()) @map("telemetry_id")
+  deviceId     String      @db.Uuid @map("device_id")
+  heartRate    Float?      @map("heart_rate")
+  spo2         Float?      @map("spo2")
+  temperature  Float?      @map("temperature")
+  accelX       Float?      @map("accel_x")
+  accelY       Float?      @map("accel_y")
+  accelZ       Float?      @map("accel_z")
+  motionState  MotionState @default(RESTING) @map("motion")
+  fallDetected Boolean     @default(false) @map("fall_detected")
+  battery      Int?        @map("battery")
+  recordedAt   DateTime    @default(now()) @map("timestamp")
+  alert        Alert?
   device       Device      @relation(fields: [deviceId], references: [id])
 
   @@index([deviceId])
   @@index([recordedAt])
+  @@map("telemetry")
 }
 
 model Alert {
-  id          String     @id @default(uuid()) @db.Uuid
-  telemetryId BigInt?
-  patientId   String     @db.Uuid
-  severity    Severity
-  alertType   AlertType
-  message     String
-  resolved    Boolean    @default(false)
-  resolvedBy  String?    @db.Uuid
-  resolvedAt  DateTime?
-  createdAt   DateTime   @default(now())
-  patient     Patient    @relation(fields: [patientId], references: [id])
-  resolver    User?      @relation("ResolvedBy", fields: [resolvedBy], references: [id])
-  telemetry   Telemetry? @relation(fields: [telemetryId], references: [id])
+  id          String      @id @default(uuid()) @db.Uuid @map("alert_id")
+  telemetryId BigInt?     @unique @map("telemetry_id")
+  patientId   String      @db.Uuid @map("patient_id")
+  severity    Severity    @map("severity")
+  alertType   AlertType   @map("type")
+  message     String      @map("message")
+  status      AlertStatus @default(PENDING) @map("status")
+  resolved    Boolean     @default(false) @map("resolved")
+  resolvedBy  String?     @db.Uuid @map("resolved_by")
+  resolvedAt  DateTime?   @map("resolved_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  patient     Patient     @relation(fields: [patientId], references: [id])
+  resolver    User?       @relation("ResolvedBy", fields: [resolvedBy], references: [id])
+  telemetry   Telemetry?  @relation(fields: [telemetryId], references: [id])
 
   @@index([patientId])
   @@index([telemetryId])
   @@index([resolvedBy])
+  @@map("alerts")
 }
 
 model AuditLog {
-  id        BigInt   @id @default(autoincrement())
-  userId    String   @db.Uuid
-  action    String
-  entity    String
-  entityId  String?
-  ipAddress String?
-  createdAt DateTime @default(now())
+  id        BigInt   @id @default(autoincrement()) @map("log_id")
+  userId    String   @db.Uuid @map("user_id")
+  action    String   @map("action")
+  entity    String   @map("resource")
+  entityId  String?  @map("entity_id")
+  ipAddress String?  @map("ip_address")
+  createdAt DateTime @default(now()) @map("timestamp")
   user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([createdAt])
+  @@map("audit_logs")
 }
 
 enum Role {
   ADMIN
   DOCTOR
-  TECHNICIAN
 }
 
 enum Gender {
@@ -153,13 +162,20 @@ enum Severity {
   CRITICAL
 }
 
-enum AlertType {
-    HIGH_HEART_RATE
-    LOW_HEART_RATE
-    LOW_SPO2
-    HIGH_TEMPERATURE
-    FALL_DETECTED
-    LOW_BATTERY
-    DEVICE_OFFLINE
-    DEVICE_TAMPERED
+enum AlertStatus {
+  PENDING
+  ACKNOWLEDGED
+  RESOLVED
 }
+
+enum AlertType {
+  HIGH_HEART_RATE
+  LOW_HEART_RATE
+  LOW_SPO2
+  HIGH_TEMPERATURE
+  FALL_DETECTED
+  LOW_BATTERY
+  DEVICE_OFFLINE
+  DEVICE_TAMPERED
+}
+

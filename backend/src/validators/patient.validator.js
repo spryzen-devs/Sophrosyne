@@ -9,12 +9,14 @@ const PatientStatusEnum = z.enum(['ACTIVE', 'INACTIVE']);
 
 export const createPatientSchema = z.object({
   body: z.object({
-    firstName: z.string().min(1, 'First name is required'),
-    lastName: z.string().min(1, 'Last name is required'),
+    name: z.string().optional(),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    age: z.number().int().positive().optional(),
     gender: GenderEnum,
     dateOfBirth: z.string().refine((date) => !isNaN(Date.parse(date)), {
       message: 'Invalid date format',
-    }),
+    }).optional(),
     bloodGroup: z.string().optional(),
     phone: z.string().optional(),
     emergencyContact: z.string().optional(),
@@ -25,8 +27,10 @@ export const createPatientSchema = z.object({
 
 export const updatePatientSchema = z.object({
   body: z.object({
-    firstName: z.string().min(1).optional(),
-    lastName: z.string().min(1).optional(),
+    name: z.string().optional(),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    age: z.number().int().positive().optional(),
     gender: GenderEnum.optional(),
     dateOfBirth: z.string().refine((date) => !isNaN(Date.parse(date)), {
       message: 'Invalid date format',

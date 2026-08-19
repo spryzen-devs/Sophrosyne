@@ -7,6 +7,7 @@ export const patientProfiles = [
     name: "John Doe",
     baseHeartRate: 72,
     baseSpo2: 98,
+    baseTemperature: 36.6,
     baseBattery: 95,
     motionPreference: "RESTING"
   },
@@ -14,6 +15,7 @@ export const patientProfiles = [
     name: "Jane Smith",
     baseHeartRate: 68,
     baseSpo2: 99,
+    baseTemperature: 36.8,
     baseBattery: 88,
     motionPreference: "WALKING"
   },
@@ -21,6 +23,7 @@ export const patientProfiles = [
     name: "Robert Brown",
     baseHeartRate: 75,
     baseSpo2: 97,
+    baseTemperature: 37.0,
     baseBattery: 92,
     motionPreference: "RESTING"
   }

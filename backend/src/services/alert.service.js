@@ -58,6 +58,17 @@ class AlertService {
       });
     }
 
+    // Temperature Thresholds
+    if (telemetry.temperature !== null && telemetry.temperature !== undefined && telemetry.temperature > 38.0) {
+      alerts.push({
+        telemetryId: telemetry.id,
+        patientId,
+        severity: 'HIGH',
+        alertType: 'HIGH_TEMPERATURE',
+        message: `Warning: High temperature detected (${telemetry.temperature}°C).`,
+      });
+    }
+
     // Fall Detection
     if (telemetry.fallDetected === true) {
       alerts.push({
@@ -180,6 +191,7 @@ class AlertService {
     }
 
     const updatedAlert = await alertRepository.update(id, {
+      status: 'RESOLVED',
       resolved: true,
       resolvedBy: userId,
       resolvedAt: new Date(),

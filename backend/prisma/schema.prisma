@@ -8,19 +8,20 @@ datasource db {
 }
 
 model User {
-  id             String     @id @default(uuid()) @db.Uuid @map("user_id")
-  fullName       String     @map("name")
-  email          String     @unique @map("email")
-  passwordHash   String     @map("password")
-  role           Role       @map("role")
-  phone          String?    @map("phone")
-  createdAt      DateTime   @default(now()) @map("created_at")
-  updatedAt      DateTime   @updatedAt @map("updated_at")
-  resolvedAlerts Alert[]    @relation("ResolvedBy")
-  auditLogs      AuditLog[]
-  patients       Patient[]  @relation("CreatedBy")
+  id               String     @id @default(uuid()) @db.Uuid @map("user_id")
+  fullName         String     @map("name")
+  email            String     @unique @map("email")
+  passwordHash     String     @map("password")
+  role             Role       @map("role")
+  phone            String?    @map("phone")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+  resolvedAlerts   Alert[]    @relation("ResolvedBy")
+  auditLogs        AuditLog[]
+  patients         Patient[]  @relation("CreatedBy")
+  assignedPatients Patient[]  @relation("AssignedDoctor")
 
-  @@index([email])
+  @@index([id])
   @@map("users")
 }
 
@@ -39,14 +40,17 @@ model Patient {
   address          String?       @map("address")
   status           PatientStatus @default(ACTIVE) @map("status")
   createdBy        String        @db.Uuid @map("created_by")
+  assignedDoctorId String?       @db.Uuid @map("assigned_doctor_id")
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
   alerts           Alert[]
   device           Device?
   creator          User          @relation("CreatedBy", fields: [createdBy], references: [id])
+  assignedDoctor   User?         @relation("AssignedDoctor", fields: [assignedDoctorId], references: [id])
 
   @@index([patientCode])
   @@index([createdBy])
+  @@index([assignedDoctorId])
   @@map("patients")
 }
 

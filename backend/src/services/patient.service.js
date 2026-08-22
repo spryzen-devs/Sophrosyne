@@ -52,8 +52,8 @@ class PatientService {
    * @param {Object} query
    * @returns {Promise<Object>}
    */
-  async getAllPatients(query) {
-    let { page = 1, limit = 10, search, patientCode, firstName, lastName } = query;
+  async getAllPatients(query, currentUser) {
+    let { page = 1, limit = 10, search, patientCode, firstName, lastName, assignedDoctorId } = query;
 
     // Ensure page and limit are numbers
     page = parseInt(page, 10) || 1;
@@ -62,6 +62,13 @@ class PatientService {
     const skip = (page - 1) * limit;
 
     const where = {};
+
+    // Filter by Doctor role: DOCTOR users only see patients assigned to them
+    if (currentUser?.role === 'DOCTOR') {
+      where.assignedDoctorId = currentUser.userId;
+    } else if (assignedDoctorId) {
+      where.assignedDoctorId = assignedDoctorId;
+    }
 
     if (patientCode) {
       where.patientCode = { contains: patientCode, mode: 'insensitive' };
@@ -76,10 +83,15 @@ class PatientService {
     }
 
     if (search) {
-      where.OR = [
-        { patientCode: { contains: search, mode: 'insensitive' } },
-        { firstName: { contains: search, mode: 'insensitive' } },
-        { lastName: { contains: search, mode: 'insensitive' } },
+      where.AND = [
+        currentUser?.role === 'DOCTOR' ? { assignedDoctorId: currentUser.userId } : {},
+        {
+          OR: [
+            { patientCode: { contains: search, mode: 'insensitive' } },
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
+          ],
+        },
       ];
     }
 

@@ -30,6 +30,11 @@ function authReducer(state, action) {
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  const logout = useCallback(() => {
+    localStorage.removeItem('sentinel_token');
+    dispatch({ type: 'LOGOUT' });
+  }, []);
+
   // Check existing token on mount
   useEffect(() => {
     async function verifyToken() {
@@ -40,14 +45,28 @@ export function AuthProvider({ children }) {
       }
       try {
         const data = await authService.getMe();
-        dispatch({ type: 'SET_USER', payload: data.data });
+        if (data?.data) {
+          dispatch({ type: 'SET_USER', payload: data.data });
+        } else {
+          throw new Error('Invalid user payload');
+        }
       } catch {
         localStorage.removeItem('sentinel_token');
         dispatch({ type: 'LOGOUT' });
       }
     }
+
     verifyToken();
-  }, []);
+
+    const handleUnauthorized = () => {
+      logout();
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
+  }, [logout]);
 
   const login = useCallback(async (email, password) => {
     dispatch({ type: 'AUTH_LOADING' });
@@ -55,19 +74,25 @@ export function AuthProvider({ children }) {
       const data = await authService.login(email, password);
       const token = data.data?.token || data.token;
       const user = data.data?.user || data.user || data;
+      if (!token || !user) {
+        throw new Error('Malformed authentication response from server');
+      }
       localStorage.setItem('sentinel_token', token);
       dispatch({ type: 'AUTH_SUCCESS', payload: { user, token } });
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed. Please try again.';
+      let message = 'Login failed. Please try again.';
+      if (error.response?.data?.message) {
+        message = error.response.data.message;
+      } else if (error.message) {
+        message = error.message;
+      }
+      if (error.code === 'ERR_NETWORK' || !error.response) {
+        message = 'Unable to connect to backend server. Please verify backend is running.';
+      }
       dispatch({ type: 'AUTH_ERROR', payload: message });
       return { success: false, message };
     }
-  }, []);
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('sentinel_token');
-    dispatch({ type: 'LOGOUT' });
   }, []);
 
   const value = {

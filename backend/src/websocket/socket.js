@@ -54,8 +54,5 @@ export const initSocket = (server) => {
  * @returns {Server}
  */
 export const getIO = () => {
-  if (!io) {
-    throw new Error('Socket.io not initialized!');
-  }
-  return io;
+  return io || null;
 };

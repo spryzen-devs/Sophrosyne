@@ -88,6 +88,14 @@ class AuthService {
     }
     return user;
   }
+
+  /**
+   * Get all registered doctors
+   * @returns {Promise<Array>}
+   */
+  async getDoctors() {
+    return authRepository.findDoctors();
+  }
 }
 
 export default new AuthService();

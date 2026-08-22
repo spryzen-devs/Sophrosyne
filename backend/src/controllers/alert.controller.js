@@ -12,7 +12,7 @@ class AlertController {
    */
   async getAllAlerts(req, res, next) {
     try {
-      const data = await alertService.getAllAlerts(req.query);
+      const data = await alertService.getAllAlerts(req.query, req.user);
       
       const response = JSON.parse(JSON.stringify(data, (key, value) =>
         typeof value === 'bigint' ? value.toString() : value
@@ -35,7 +35,7 @@ class AlertController {
    */
   async getActiveAlerts(req, res, next) {
     try {
-      const data = await alertService.getActiveAlerts(req.query);
+      const data = await alertService.getActiveAlerts(req.query, req.user);
       
       const response = JSON.parse(JSON.stringify(data, (key, value) =>
         typeof value === 'bigint' ? value.toString() : value

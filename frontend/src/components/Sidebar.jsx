@@ -51,24 +51,31 @@ export default function Sidebar({ open, onClose }) {
         </div>
 
         <nav className="sidebar__nav">
-          {navItems.map((item) => {
-            const Icon = iconMap[item.icon];
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  `sidebar__nav-item ${isActive ? 'sidebar__nav-item--active' : ''}`
-                }
-                onClick={onClose}
-              >
-                <span className="sidebar__nav-icon">
-                  <Icon size={20} />
-                </span>
-                <span className="sidebar__nav-label">{item.label}</span>
-              </NavLink>
-            );
-          })}
+          {navItems
+            .filter((item) => {
+              if (item.path === '/devices' && user?.role === 'DOCTOR') {
+                return false;
+              }
+              return true;
+            })
+            .map((item) => {
+              const Icon = iconMap[item.icon];
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `sidebar__nav-item ${isActive ? 'sidebar__nav-item--active' : ''}`
+                  }
+                  onClick={onClose}
+                >
+                  <span className="sidebar__nav-icon">
+                    <Icon size={20} />
+                  </span>
+                  <span className="sidebar__nav-label">{item.label}</span>
+                </NavLink>
+              );
+            })}
         </nav>
 
         <div className="sidebar__footer">

@@ -109,7 +109,7 @@ class AlertService {
    * @param {Object} query
    * @returns {Promise<Object>}
    */
-  async getAllAlerts(query) {
+  async getAllAlerts(query, currentUser) {
     let { page = 1, limit = 10, severity, alertType, resolved, patientId, sortBy = 'createdAt', sortOrder = 'desc' } = query;
 
     page = parseInt(page, 10) || 1;
@@ -129,6 +129,7 @@ class AlertService {
       take: limit,
       where,
       orderBy: { [sortBy]: sortOrder },
+      currentUser,
     });
 
     return {
@@ -145,10 +146,11 @@ class AlertService {
   /**
    * Get all active (unresolved) alerts
    * @param {Object} query
+   * @param {Object} currentUser
    * @returns {Promise<Object>}
    */
-  async getActiveAlerts(query) {
-    return this.getAllAlerts({ ...query, resolved: 'false' });
+  async getActiveAlerts(query, currentUser) {
+    return this.getAllAlerts({ ...query, resolved: 'false' }, currentUser);
   }
 
   /**

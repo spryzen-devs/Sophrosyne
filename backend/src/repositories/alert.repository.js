@@ -20,10 +20,17 @@ class AlertRepository {
    * @param {Object} params
    * @returns {Promise<[Object[], number]>}
    */
-  async findMany({ skip, take, where, orderBy }) {
+  async findMany({ skip, take, where = {}, orderBy, currentUser }) {
+    const finalWhere = { ...where };
+    if (currentUser?.role === 'DOCTOR') {
+      finalWhere.patient = {
+        assignedDoctorId: currentUser.userId,
+      };
+    }
+
     const [data, total] = await Promise.all([
       prisma.alert.findMany({
-        where,
+        where: finalWhere,
         skip,
         take,
         orderBy: orderBy || { createdAt: 'desc' },
@@ -45,7 +52,7 @@ class AlertRepository {
           },
         },
       }),
-      prisma.alert.count({ where }),
+      prisma.alert.count({ where: finalWhere }),
     ]);
 
     return [data, total];

@@ -26,13 +26,19 @@ export default function LiveMonitor() {
   const patientIds = patients.map((p) => p.id);
 
   const handleTelemetry = useCallback((data) => {
-    setLiveData((prev) => ({
-      ...prev,
-      [data.deviceId]: {
+    if (!data) return;
+    const deviceKey = data.deviceId;
+    const patientKey = data.patientId;
+    setLiveData((prev) => {
+      const next = { ...prev };
+      const entry = {
         ...data,
         receivedAt: new Date().toISOString(),
-      },
-    }));
+      };
+      if (deviceKey) next[deviceKey] = entry;
+      if (patientKey) next[patientKey] = entry;
+      return next;
+    });
   }, []);
 
   const handleAlert = useCallback((alert) => {
@@ -120,9 +126,9 @@ export default function LiveMonitor() {
       ) : (
         <div className="live-monitor__grid">
           {patients.map((patient) => {
-            const device = patient.devices?.[0];
+            const device = patient.devices?.[0] || patient.device;
             const deviceId = device?.id;
-            const live = deviceId ? liveData[deviceId] : null;
+            const live = (deviceId && liveData[deviceId]) || (patient.id && liveData[patient.id]) || null;
 
             // Use live data if available, otherwise fall back to latest
             const hr = live?.heartRate ?? patient.latestTelemetry?.heartRate;

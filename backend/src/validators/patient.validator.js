@@ -22,6 +22,7 @@ export const createPatientSchema = z.object({
     emergencyContact: z.string().optional(),
     address: z.string().optional(),
     status: PatientStatusEnum.default('ACTIVE'),
+    assignedDoctorId: z.string().uuid().nullable().optional(),
   }),
 });
 
@@ -40,6 +41,7 @@ export const updatePatientSchema = z.object({
     emergencyContact: z.string().optional(),
     address: z.string().optional(),
     status: PatientStatusEnum.optional(),
+    assignedDoctorId: z.string().uuid().nullable().optional(),
   }),
 });
 
@@ -51,5 +53,6 @@ export const getPatientsQuerySchema = z.object({
     patientCode: z.string().optional(),
     firstName: z.string().optional(),
     lastName: z.string().optional(),
+    assignedDoctorId: z.string().optional(),
   }),
 });

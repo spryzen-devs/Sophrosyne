@@ -36,6 +36,14 @@ class PatientRepository {
               fullName: true,
             },
           },
+          assignedDoctor: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phone: true,
+            },
+          },
         },
       }),
       prisma.patient.count({ where }),
@@ -59,6 +67,15 @@ class PatientRepository {
             fullName: true,
           },
         },
+        assignedDoctor: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phone: true,
+          },
+        },
+        device: true,
       },
     });
   }

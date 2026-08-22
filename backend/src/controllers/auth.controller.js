@@ -24,6 +24,44 @@ class AuthController {
   }
 
   /**
+   * Register a new doctor (Admin only)
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
+  async registerDoctor(req, res, next) {
+    try {
+      const doctorData = { ...req.body, role: 'DOCTOR' };
+      const doctor = await authService.register(doctorData);
+      res.status(201).json({
+        success: true,
+        message: 'Doctor created successfully',
+        data: doctor,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get all registered doctors
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
+  async getDoctors(req, res, next) {
+    try {
+      const doctors = await authService.getDoctors();
+      res.status(200).json({
+        success: true,
+        data: doctors,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * Login user
    * @param {Request} req
    * @param {Response} res

@@ -8,16 +8,18 @@ class DashboardService {
    * Get dashboard overview
    * @returns {Promise<Object>}
    */
-  async getOverview() {
-    return dashboardRepository.getOverviewStats();
+  async getOverview(currentUser) {
+    return dashboardRepository.getOverviewStats(currentUser);
   }
 
   /**
    * Get recent alerts
+   * @param {number} limit
+   * @param {Object} currentUser
    * @returns {Promise<Array>}
    */
-  async getRecentAlerts() {
-    const alerts = await dashboardRepository.getRecentAlerts(10);
+  async getRecentAlerts(limit = 10, currentUser) {
+    const alerts = await dashboardRepository.getRecentAlerts(limit, currentUser);
     
     return alerts.map(alert => ({
       alertId: alert.id,
@@ -33,18 +35,20 @@ class DashboardService {
 
   /**
    * Get live patients
+   * @param {Object} currentUser
    * @returns {Promise<Array>}
    */
-  async getLivePatients() {
-    return dashboardRepository.getLivePatients();
+  async getLivePatients(currentUser) {
+    return dashboardRepository.getLivePatients(currentUser);
   }
 
   /**
    * Get device status
+   * @param {Object} currentUser
    * @returns {Promise<Array>}
    */
-  async getDeviceStatus() {
-    return dashboardRepository.getDeviceStatus();
+  async getDeviceStatus(currentUser) {
+    return dashboardRepository.getDeviceStatus(currentUser);
   }
 }
 

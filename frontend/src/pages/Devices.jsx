@@ -67,6 +67,19 @@ export default function Devices() {
     }
   };
 
+  const handleDelete = async (device) => {
+    if (!window.confirm(`Are you sure you want to delete device ${device.deviceCode}?`)) {
+      return;
+    }
+    try {
+      await deviceService.remove(device.id);
+      toast.success('Device deleted successfully');
+      refetch();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete device');
+    }
+  };
+
   const columns = [
     { key: 'deviceCode', label: 'Device Code' },
     {
@@ -97,11 +110,22 @@ export default function Devices() {
     },
     {
       key: 'actions',
-      label: '',
+      label: 'Actions',
       render: (_, row) => (
-        <button className="data-table__action" onClick={() => navigate(`/devices/${row.id}`)}>
-          View
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button className="data-table__action" onClick={() => navigate(`/devices/${row.id}`)}>
+            View
+          </button>
+          {hasRole('ADMIN') && (
+            <button
+              className="data-table__action"
+              style={{ color: 'var(--red, #ef4444)' }}
+              onClick={() => handleDelete(row)}
+            >
+              Delete
+            </button>
+          )}
+        </div>
       ),
     },
   ];

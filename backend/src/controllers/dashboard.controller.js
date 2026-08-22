@@ -12,7 +12,7 @@ class DashboardController {
    */
   async getOverview(req, res, next) {
     try {
-      const data = await dashboardService.getOverview();
+      const data = await dashboardService.getOverview(req.user);
       res.status(200).json({
         success: true,
         message: 'Dashboard overview fetched successfully',
@@ -31,7 +31,7 @@ class DashboardController {
    */
   async getRecentAlerts(req, res, next) {
     try {
-      const data = await dashboardService.getRecentAlerts();
+      const data = await dashboardService.getRecentAlerts(10, req.user);
       res.status(200).json({
         success: true,
         message: 'Recent alerts fetched successfully',
@@ -50,7 +50,7 @@ class DashboardController {
    */
   async getLivePatients(req, res, next) {
     try {
-      const data = await dashboardService.getLivePatients();
+      const data = await dashboardService.getLivePatients(req.user);
       res.status(200).json({
         success: true,
         message: 'Live patients fetched successfully',
@@ -69,7 +69,7 @@ class DashboardController {
    */
   async getDeviceStatus(req, res, next) {
     try {
-      const data = await dashboardService.getDeviceStatus();
+      const data = await dashboardService.getDeviceStatus(req.user);
       res.status(200).json({
         success: true,
         message: 'Device status fetched successfully',

@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import DashboardLayout from './layouts/DashboardLayout';
-import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Patients from './pages/Patients';
 import PatientDetail from './pages/PatientDetail';
@@ -11,13 +10,14 @@ import DeviceDetail from './pages/DeviceDetail';
 import Alerts from './pages/Alerts';
 import LiveMonitor from './pages/LiveMonitor';
 import NotFound from './pages/NotFound';
+import Login from './pages/Login';
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public */}
+          {/* Public Route */}
           <Route path="/login" element={<Login />} />
 
           {/* Protected (DashboardLayout handles auth guard) */}

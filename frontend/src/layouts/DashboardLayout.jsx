@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../hooks/useAuth';
+import { useSocket } from '../hooks/useSocket';
 import alertService from '../services/alert.service';
 import './DashboardLayout.css';
 
@@ -24,13 +25,24 @@ export default function DashboardLayout() {
   const basePath = '/' + location.pathname.split('/').filter(Boolean)[0];
   const title = pageTitles[basePath] || 'Sentinel';
 
+  const handleAlertSocket = useCallback((alert) => {
+    if (alert && (alert.severity === 'CRITICAL' || alert.severity === 'HIGH')) {
+      setHasAlerts(true);
+    }
+  }, []);
+
+  useSocket({
+    onAlert: handleAlertSocket,
+  });
+
   // Check for active critical alerts
   useEffect(() => {
     async function checkAlerts() {
       try {
-        const result = await alertService.getActive({ severity: 'CRITICAL', limit: 1 });
+        const result = await alertService.getActive({ limit: 10 });
         const alerts = result.data || result;
-        setHasAlerts(Array.isArray(alerts) ? alerts.length > 0 : false);
+        const activeList = Array.isArray(alerts) ? alerts : [];
+        setHasAlerts(activeList.some((a) => !a.resolved));
       } catch {
         // Silently fail
       }

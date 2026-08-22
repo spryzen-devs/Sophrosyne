@@ -13,17 +13,28 @@ class NotificationService {
    */
   notifyNewTelemetry(patientId, deviceCode, telemetry) {
     const io = getIO();
+    if (!io) return;
+
     const payload = this._serializeData({
       patientId,
       deviceCode,
+      deviceId: telemetry.deviceId,
       telemetry,
+      heartRate: telemetry.heartRate,
+      spo2: telemetry.spo2,
+      temperature: telemetry.temperature,
+      motionState: telemetry.motionState,
+      fallDetected: telemetry.fallDetected,
+      battery: telemetry.battery,
+      recordedAt: telemetry.recordedAt,
     });
 
-    // Emit to specific patient room
-    console.log(`🔥 Emitting telemetry:new for patient:${patientId}`);
+    // Emit to specific patient room & globally
+    console.log(`🔥 Emitting telemetry:update for patient:${patientId} (${deviceCode})`);
     io.to(`patient:${patientId}`).emit('telemetry:new', payload);
-    // Also emit globally for monitoring dashboard (optional but often useful)
+    io.to(`patient:${patientId}`).emit('telemetry:update', payload);
     io.emit('telemetry:new', payload);
+    io.emit('telemetry:update', payload);
   }
 
   /**
@@ -32,6 +43,8 @@ class NotificationService {
    */
   notifyNewAlert(alert) {
     const io = getIO();
+    if (!io) return;
+
     const payload = this._serializeData({
       alertId: alert.id,
       severity: alert.severity,
@@ -53,6 +66,8 @@ class NotificationService {
    */
   notifyAlertResolved(alert) {
     const io = getIO();
+    if (!io) return;
+
     const payload = this._serializeData({
       alertId: alert.id,
       patientId: alert.patientId,

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useFetch } from '../hooks/useFetch';
+import { useSocket } from '../hooks/useSocket';
 import alertService from '../services/alert.service';
 import Card from '../components/Card';
 import DataTable from '../components/DataTable';
@@ -32,6 +33,14 @@ export default function Alerts() {
     [severity, alertType, resolved, page]
   );
 
+  const handleAlertEvent = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  useSocket({
+    onAlert: handleAlertEvent,
+  });
+
   const alerts = data?.alerts || data?.data || (Array.isArray(data) ? data : []);
   const pagination = data?.pagination || {};
   const total = pagination.total || alerts.length;
@@ -41,7 +50,7 @@ export default function Alerts() {
     setResolvingId(alertId);
     try {
       await alertService.resolve(alertId);
-      toast.success('Alert resolved');
+      toast.success('Alert resolved successfully');
       refetch();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to resolve alert');
@@ -83,10 +92,10 @@ export default function Alerts() {
     },
     {
       key: 'actions',
-      label: '',
+      label: 'Actions',
       render: (_, row) => {
         if (row.resolved) return null;
-        if (!hasRole('ADMIN', 'DOCTOR')) return null;
+        if (!hasRole('DOCTOR')) return null;
         return (
           <Button
             variant="text"

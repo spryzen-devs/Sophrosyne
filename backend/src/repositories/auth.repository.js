@@ -57,6 +57,24 @@ class AuthRepository {
       },
     });
   }
+
+  /**
+   * Find all users with DOCTOR role
+   * @returns {Promise<Array>}
+   */
+  async findDoctors() {
+    return prisma.user.findMany({
+      where: { role: 'DOCTOR' },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        createdAt: true,
+      },
+      orderBy: { fullName: 'asc' },
+    });
+  }
 }
 
 export default new AuthRepository();

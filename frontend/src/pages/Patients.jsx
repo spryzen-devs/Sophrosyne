@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, UserPlus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useFetch } from '../hooks/useFetch';
 import patientService from '../services/patient.service';
+import authService from '../services/auth.service';
 import Card from '../components/Card';
 import SearchBar from '../components/SearchBar';
 import Button from '../components/Button';
@@ -24,7 +25,11 @@ export default function Patients() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [showDoctorModal, setShowDoctorModal] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [creatingDoctor, setCreatingDoctor] = useState(false);
+  const [doctors, setDoctors] = useState([]);
+
   const [form, setForm] = useState({
     patientCode: '',
     firstName: '',
@@ -35,7 +40,29 @@ export default function Patients() {
     phone: '',
     emergencyContact: '',
     address: '',
+    assignedDoctorId: '',
   });
+
+  const [doctorForm, setDoctorForm] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    phone: '',
+  });
+
+  const fetchDoctors = useCallback(async () => {
+    try {
+      const res = await authService.getDoctors();
+      const docs = res.data || res || [];
+      setDoctors(docs);
+    } catch {
+      // Silently fail or ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDoctors();
+  }, [fetchDoctors]);
 
   const { data, loading, refetch } = useFetch(
     () => patientService.getAll({ search, page, limit: 10 }),
@@ -56,12 +83,15 @@ export default function Patients() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleDoctorFormChange = (field, value) => {
+    setDoctorForm((prev) => ({ ...prev, [field]: value }));
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     setCreating(true);
     try {
       const payload = { ...form };
-      // Remove empty optional fields
       Object.keys(payload).forEach((key) => {
         if (payload[key] === '') delete payload[key];
       });
@@ -70,13 +100,42 @@ export default function Patients() {
       setShowModal(false);
       setForm({
         patientCode: '', firstName: '', lastName: '', gender: 'MALE',
-        dateOfBirth: '', bloodGroup: '', phone: '', emergencyContact: '', address: '',
+        dateOfBirth: '', bloodGroup: '', phone: '', emergencyContact: '', address: '', assignedDoctorId: '',
       });
       refetch();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create patient');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleCreateDoctor = async (e) => {
+    e.preventDefault();
+    setCreatingDoctor(true);
+    try {
+      await authService.registerDoctor({ ...doctorForm, role: 'DOCTOR' });
+      toast.success(`Doctor ${doctorForm.fullName} created successfully! Credentials ready for login.`);
+      setShowDoctorModal(false);
+      setDoctorForm({ fullName: '', email: '', password: '', phone: '' });
+      fetchDoctors();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create doctor');
+    } finally {
+      setCreatingDoctor(false);
+    }
+  };
+
+  const handleDelete = async (patient) => {
+    if (!window.confirm(`Are you sure you want to delete patient ${patient.firstName} ${patient.lastName} (${patient.patientCode})?`)) {
+      return;
+    }
+    try {
+      await patientService.remove(patient.id);
+      toast.success('Patient deleted successfully');
+      refetch();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete patient');
     }
   };
 
@@ -99,6 +158,11 @@ export default function Patients() {
     },
     { key: 'bloodGroup', label: 'Blood Group' },
     {
+      key: 'assignedDoctor',
+      label: 'Assigned Doctor',
+      render: (_, row) => row.assignedDoctor ? `Dr. ${row.assignedDoctor.fullName}` : <span style={{ color: 'var(--text-muted)' }}>Unassigned</span>,
+    },
+    {
       key: 'status',
       label: 'Status',
       render: (val) => (
@@ -109,11 +173,22 @@ export default function Patients() {
     },
     {
       key: 'actions',
-      label: '',
+      label: 'Actions',
       render: (_, row) => (
-        <button className="data-table__action" onClick={() => navigate(`/patients/${row.id}`)}>
-          View
-        </button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button className="data-table__action" onClick={() => navigate(`/patients/${row.id}`)}>
+            View
+          </button>
+          {hasRole('ADMIN') && (
+            <button
+              className="data-table__action"
+              style={{ color: 'var(--red, #ef4444)' }}
+              onClick={() => handleDelete(row)}
+            >
+              Delete
+            </button>
+          )}
+        </div>
       ),
     },
   ];
@@ -122,6 +197,10 @@ export default function Patients() {
   const bloodGroupOptions = [
     { value: '', label: 'Select blood group' },
     ...BLOOD_GROUPS.map((b) => ({ value: b, label: b })),
+  ];
+  const doctorOptions = [
+    { value: '', label: 'Unassigned (No doctor)' },
+    ...doctors.map((d) => ({ value: d.id, label: `Dr. ${d.fullName} (${d.email})` })),
   ];
 
   return (
@@ -134,14 +213,23 @@ export default function Patients() {
             placeholder="Search patients..."
           />
         </div>
-        {hasRole('ADMIN', 'DOCTOR') && (
-          <Button
-            variant="primary"
-            icon={<Plus size={18} />}
-            onClick={() => setShowModal(true)}
-          >
-            Add Patient
-          </Button>
+        {hasRole('ADMIN') && (
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button
+              variant="outline"
+              icon={<UserPlus size={18} />}
+              onClick={() => setShowDoctorModal(true)}
+            >
+              Add Doctor
+            </Button>
+            <Button
+              variant="primary"
+              icon={<Plus size={18} />}
+              onClick={() => setShowModal(true)}
+            >
+              Add Patient
+            </Button>
+          </div>
         )}
       </div>
 
@@ -161,6 +249,55 @@ export default function Patients() {
         />
       </Card>
 
+      {/* Add Doctor Modal (Admin Only) */}
+      <Modal
+        open={showDoctorModal}
+        onClose={() => setShowDoctorModal(false)}
+        title="Add New Doctor Account"
+        footer={
+          <>
+            <Button variant="text" onClick={() => setShowDoctorModal(false)}>Cancel</Button>
+            <Button variant="primary" loading={creatingDoctor} onClick={handleCreateDoctor}>Create Doctor</Button>
+          </>
+        }
+      >
+        <form className="add-patient-form" onSubmit={handleCreateDoctor}>
+          <Input
+            id="doctor-fullname"
+            label="Full Name (e.g. Dr. John Watson)"
+            placeholder="Dr. Full Name"
+            value={doctorForm.fullName}
+            onChange={(e) => handleDoctorFormChange('fullName', e.target.value)}
+            required
+          />
+          <Input
+            id="doctor-email"
+            type="email"
+            label="Email Address"
+            placeholder="doctor@sentinel.com"
+            value={doctorForm.email}
+            onChange={(e) => handleDoctorFormChange('email', e.target.value)}
+            required
+          />
+          <Input
+            id="doctor-password"
+            type="password"
+            label="Password"
+            placeholder="At least 6 characters"
+            value={doctorForm.password}
+            onChange={(e) => handleDoctorFormChange('password', e.target.value)}
+            required
+          />
+          <Input
+            id="doctor-phone"
+            label="Phone Number"
+            placeholder="Optional"
+            value={doctorForm.phone}
+            onChange={(e) => handleDoctorFormChange('phone', e.target.value)}
+          />
+        </form>
+      </Modal>
+
       {/* Add Patient Modal */}
       <Modal
         open={showModal}
@@ -177,10 +314,9 @@ export default function Patients() {
           <Input
             id="patient-code"
             label="Patient Code"
-            placeholder="e.g., PAT-001"
+            placeholder="Auto-generated if left blank (e.g., PAT-0001)"
             value={form.patientCode}
             onChange={(e) => handleFormChange('patientCode', e.target.value)}
-            required
           />
           <div className="add-patient-form__row">
             <Input
@@ -231,6 +367,13 @@ export default function Patients() {
               onChange={(e) => handleFormChange('phone', e.target.value)}
             />
           </div>
+          <Select
+            id="assigned-doctor"
+            label="Assign Doctor (Only Admin Can Assign)"
+            options={doctorOptions}
+            value={form.assignedDoctorId}
+            onChange={(e) => handleFormChange('assignedDoctorId', e.target.value)}
+          />
           <Input
             id="emergency-contact"
             label="Emergency Contact"

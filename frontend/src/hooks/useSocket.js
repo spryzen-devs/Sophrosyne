@@ -1,33 +1,55 @@
 import { useEffect, useRef } from 'react';
+import socketService from '../services/socket.service';
 
 /**
- * Mock Socket.IO connection hook for UI testing
+ * Real Socket.IO connection hook for live telemetry and alerts
  */
 export function useSocket({ onTelemetry, onAlert, patientIds = [] } = {}) {
-  const socketRef = useRef({ emit: () => {}, disconnect: () => {} });
+  const socketRef = useRef(null);
 
   useEffect(() => {
-    if (!onTelemetry || patientIds.length === 0) return;
+    // Connect socket using JWT auth from localStorage
+    const socket = socketService.connect();
+    socketRef.current = socket;
 
-    // Simulate incoming telemetry every 2 seconds for subscribed patients
-    const interval = setInterval(() => {
-      patientIds.forEach(patientId => {
-        // Find device for this patient in our mock data logic (simplified here)
-        // We'll just emit some random fluctuating vitals
-        onTelemetry({
-          deviceId: `mock-device-${patientId}`,
-          patientId: patientId,
-          heartRate: 65 + Math.floor(Math.random() * 30),
-          spo2: 94 + Math.floor(Math.random() * 6),
-          motionState: Math.random() > 0.9 ? 'WALKING' : 'RESTING',
-          fallDetected: Math.random() > 0.95,
-          battery: 80 + Math.floor(Math.random() * 20),
-        });
+    // Join rooms for all assigned/active patient IDs
+    patientIds.forEach((patientId) => {
+      if (patientId) {
+        socketService.joinPatient(patientId);
+      }
+    });
+
+    // Telemetry handler wrapper
+    const handleTelemetry = (data) => {
+      if (onTelemetry && data) {
+        onTelemetry(data);
+      }
+    };
+
+    // Alert handler wrapper
+    const handleAlert = (data) => {
+      if (onAlert && data) {
+        onAlert(data);
+      }
+    };
+
+    // Subscribe to events
+    socketService.subscribe('telemetry:new', handleTelemetry);
+    socketService.subscribe('telemetry:update', handleTelemetry);
+    socketService.subscribe('alert:new', handleAlert);
+
+    // Clean up event listeners & leave rooms on unmount
+    return () => {
+      patientIds.forEach((patientId) => {
+        if (patientId) {
+          socketService.leavePatient(patientId);
+        }
       });
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [JSON.stringify(patientIds), onTelemetry]);
+      socketService.unsubscribe('telemetry:new', handleTelemetry);
+      socketService.unsubscribe('telemetry:update', handleTelemetry);
+      socketService.unsubscribe('alert:new', handleAlert);
+    };
+  }, [JSON.stringify(patientIds), onTelemetry, onAlert]);
 
   return socketRef;
 }

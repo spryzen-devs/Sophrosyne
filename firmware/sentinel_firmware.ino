@@ -291,6 +291,7 @@ void sendTelemetryPayload() {
   
   String hrString   = (hasFinger && finalHR > 0) ? String(finalHR) : "null";
   String spo2String = (hasFinger && finalHR > 0) ? String(calculatedSpo2) : "null";
+  String tempString = hasFinger ? String(tempC, 1) : "null";
   String fallValue  = fallDetected ? "true" : "false";
 
   int batteryPercent = 100;
@@ -306,7 +307,7 @@ void sendTelemetryPayload() {
   jsonPayload += "\"deviceCode\":\"" + String(DEVICE_CODE) + "\",";
   jsonPayload += "\"heartRate\":" + hrString + ",";
   jsonPayload += "\"spo2\":" + spo2String + ",";
-  jsonPayload += "\"temperature\":" + String(tempC, 1) + ",";
+  jsonPayload += "\"temperature\":" + tempString + ",";
   jsonPayload += "\"accelX\":" + String(accelX, 2) + ",";
   jsonPayload += "\"accelY\":" + String(accelY, 2) + ",";
   jsonPayload += "\"accelZ\":" + String(accelZ, 2) + ",";

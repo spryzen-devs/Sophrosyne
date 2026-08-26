@@ -31,6 +31,7 @@ export default function PatientDetail() {
   const [updating, setUpdating] = useState(false);
   const [doctors, setDoctors] = useState([]);
   const [liveTelemetry, setLiveTelemetry] = useState(null);
+  const [resolvingAlertId, setResolvingAlertId] = useState(null);
 
   const { data: patientData, loading: patientLoading, refetch } = useFetch(
     () => patientService.getById(id), [id]
@@ -53,12 +54,12 @@ export default function PatientDetail() {
     if (!data) return;
     if (data.patientId === id || data.deviceId === deviceId || data.deviceCode === device?.deviceCode) {
       setLiveTelemetry({
-        heartRate: data.heartRate ?? data.telemetry?.heartRate,
-        spo2: data.spo2 ?? data.telemetry?.spo2,
-        temperature: data.temperature ?? data.telemetry?.temperature,
-        motionState: data.motionState ?? data.telemetry?.motionState,
-        fallDetected: data.fallDetected ?? data.telemetry?.fallDetected,
-        battery: data.battery ?? data.telemetry?.battery,
+        heartRate: data.heartRate !== undefined ? data.heartRate : data.telemetry?.heartRate,
+        spo2: data.spo2 !== undefined ? data.spo2 : data.telemetry?.spo2,
+        temperature: data.temperature !== undefined ? data.temperature : data.telemetry?.temperature,
+        motionState: data.motionState !== undefined ? data.motionState : data.telemetry?.motionState,
+        fallDetected: data.fallDetected !== undefined ? data.fallDetected : data.telemetry?.fallDetected,
+        battery: data.battery !== undefined ? data.battery : data.telemetry?.battery,
         recordedAt: (data.recordedAt ?? data.telemetry?.recordedAt) || new Date().toISOString(),
       });
     }
@@ -123,7 +124,7 @@ export default function PatientDetail() {
   }, [showEditModal, fetchDoctors]);
 
   const initialTelemetry = telemetryData?.telemetry || telemetryData?.data || telemetryData;
-  const currentTelemetry = liveTelemetry || initialTelemetry;
+  const currentTelemetry = liveTelemetry || initialTelemetry || {};
   const alerts = alertsData?.alerts || alertsData?.data || (Array.isArray(alertsData) ? alertsData : []);
 
   if (patientLoading) return <Loader />;
@@ -147,6 +148,19 @@ export default function PatientDetail() {
       toast.error(err.response?.data?.message || 'Failed to update patient');
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleResolvePatientAlert = async (alertId) => {
+    setResolvingAlertId(alertId);
+    try {
+      await alertService.resolve(alertId);
+      toast.success('Alert resolved successfully');
+      refetchAlerts();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to resolve alert');
+    } finally {
+      setResolvingAlertId(null);
     }
   };
 
@@ -175,6 +189,24 @@ export default function PatientDetail() {
           {val ? 'Resolved' : 'Active'}
         </Badge>
       ),
+    },
+    {
+      key: 'actions',
+      label: 'Action',
+      render: (_, row) => {
+        const id = row.id || row.alertId;
+        if (row.resolved) return null;
+        return (
+          <Button
+            size="sm"
+            variant="outline-secondary"
+            onClick={() => handleResolvePatientAlert(id)}
+            loading={resolvingAlertId === id}
+          >
+            Resolve
+          </Button>
+        );
+      },
     },
   ];
 

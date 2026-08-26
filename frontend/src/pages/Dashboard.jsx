@@ -1,15 +1,18 @@
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useDashboardOverview, useDashboardRecentAlerts, useDashboardDeviceStatus, useDashboardLivePatients } from '../hooks/useDashboard';
 import { useFetch } from '../hooks/useFetch';
 import { useSocket } from '../hooks/useSocket';
 import telemetryService from '../services/telemetry.service';
+import alertService from '../services/alert.service';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
 import StatusDot from '../components/StatusDot';
 import DataTable from '../components/DataTable';
+import Button from '../components/Button';
 import { timeAgo, formatAlertType } from '../utils/formatters';
+import toast from 'react-hot-toast';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -84,6 +87,22 @@ export default function Dashboard() {
       spo2: t.spo2,
     }));
 
+  const [resolvingId, setResolvingId] = useState(null);
+
+  const handleResolveAlert = async (alertId) => {
+    setResolvingId(alertId);
+    try {
+      await alertService.resolve(alertId);
+      toast.success('Alert resolved successfully');
+      refetchAlerts();
+      refetchOverview();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to resolve alert');
+    } finally {
+      setResolvingId(null);
+    }
+  };
+
   const alertColumns = [
     {
       key: 'severity',
@@ -108,6 +127,26 @@ export default function Dashboard() {
       key: 'createdAt',
       label: 'Time',
       render: (val) => timeAgo(val),
+    },
+    {
+      key: 'actions',
+      label: 'Action',
+      render: (_, row) => {
+        const id = row.id || row.alertId;
+        if (row.resolved) {
+          return <Badge variant="resolved">Resolved</Badge>;
+        }
+        return (
+          <Button
+            size="sm"
+            variant="outline-secondary"
+            onClick={() => handleResolveAlert(id)}
+            loading={resolvingId === id}
+          >
+            Resolve
+          </Button>
+        );
+      },
     },
   ];
 

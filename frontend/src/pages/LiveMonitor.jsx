@@ -4,6 +4,7 @@ import { AlertTriangle } from 'lucide-react';
 import { useFetch } from '../hooks/useFetch';
 import { useSocket } from '../hooks/useSocket';
 import dashboardService from '../services/dashboard.service';
+import alertService from '../services/alert.service';
 import Badge from '../components/Badge';
 import StatusDot from '../components/StatusDot';
 import Button from '../components/Button';
@@ -17,7 +18,26 @@ export default function LiveMonitor() {
   const [liveData, setLiveData] = useState({});
   const [alertBanner, setAlertBanner] = useState(null);
   const [highlightedCards, setHighlightedCards] = useState(new Set());
+  const [resolvingBanner, setResolvingBanner] = useState(false);
   const bannerTimerRef = useRef(null);
+
+  const handleResolveBanner = async () => {
+    const targetId = alertBanner?.alertId || alertBanner?.id;
+    if (targetId) {
+      setResolvingBanner(true);
+      try {
+        await alertService.resolve(targetId);
+        toast.success('Alert resolved successfully');
+        setAlertBanner(null);
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Failed to resolve alert');
+      } finally {
+        setResolvingBanner(false);
+      }
+    } else {
+      setAlertBanner(null);
+    }
+  };
 
   const { data: patientsData, loading } = useFetch(() => dashboardService.getLivePatients());
   const patients = Array.isArray(patientsData) ? patientsData : (patientsData?.patients || []);
@@ -109,11 +129,11 @@ export default function LiveMonitor() {
             <div className="live-monitor__alert-message">{alertBanner.message}</div>
           </div>
           <div className="live-monitor__alert-actions">
-            <Button variant="text" size="sm" onClick={() => navigate(`/alerts`)}>
-              View
+            <Button variant="danger" size="sm" onClick={handleResolveBanner} loading={resolvingBanner}>
+              Resolve Alert
             </Button>
-            <Button variant="text" size="sm" onClick={() => setAlertBanner(null)}>
-              Dismiss
+            <Button variant="text" size="sm" onClick={() => navigate(`/alerts`)}>
+              View All
             </Button>
           </div>
         </div>
@@ -131,12 +151,12 @@ export default function LiveMonitor() {
             const live = (deviceId && liveData[deviceId]) || (patient.id && liveData[patient.id]) || null;
 
             // Use live data if available, otherwise fall back to latest
-            const hr = live?.heartRate ?? patient.latestTelemetry?.heartRate;
-            const spo2 = live?.spo2 ?? patient.latestTelemetry?.spo2;
-            const temp = live?.temperature ?? patient.latestTelemetry?.temperature;
-            const motion = live?.motionState ?? patient.latestTelemetry?.motionState;
-            const battery = live?.battery ?? device?.batteryLevel;
-            const fallDetected = live?.fallDetected || motion === 'FALL';
+            const hr = live ? live.heartRate : patient.latestTelemetry?.heartRate;
+            const spo2 = live ? live.spo2 : patient.latestTelemetry?.spo2;
+            const temp = live ? live.temperature : patient.latestTelemetry?.temperature;
+            const motion = live ? live.motionState : patient.latestTelemetry?.motionState;
+            const battery = live ? live.battery : device?.batteryLevel;
+            const fallDetected = live ? live.fallDetected || motion === 'FALL' : patient.latestTelemetry?.fallDetected;
             const lastUpdate = live?.receivedAt || patient.latestTelemetry?.recordedAt;
 
             const hrStatus = getVitalStatus('hr', hr);

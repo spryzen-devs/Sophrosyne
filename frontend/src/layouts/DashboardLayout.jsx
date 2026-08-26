@@ -25,6 +25,12 @@ export default function DashboardLayout() {
   const basePath = '/' + location.pathname.split('/').filter(Boolean)[0];
   const title = pageTitles[basePath] || 'Sentinel';
 
+  const handleAlertSocket = useCallback((alert) => {
+    if (alert && (alert.severity === 'CRITICAL' || alert.severity === 'HIGH')) {
+      setHasAlerts(true);
+    }
+  }, []);
+
   const handleAlertResolvedSocket = useCallback(() => {
     async function checkAlerts() {
       try {

@@ -150,14 +150,14 @@ export default function LiveMonitor() {
             const deviceId = device?.id;
             const live = (deviceId && liveData[deviceId]) || (patient.id && liveData[patient.id]) || null;
 
-            // Use live data if available, otherwise fall back to latest
-            const hr = live ? live.heartRate : patient.latestTelemetry?.heartRate;
-            const spo2 = live ? live.spo2 : patient.latestTelemetry?.spo2;
-            const temp = live ? live.temperature : patient.latestTelemetry?.temperature;
-            const motion = live ? live.motionState : patient.latestTelemetry?.motionState;
-            const battery = live ? live.battery : device?.batteryLevel;
-            const fallDetected = live ? live.fallDetected || motion === 'FALL' : patient.latestTelemetry?.fallDetected;
-            const lastUpdate = live?.receivedAt || patient.latestTelemetry?.recordedAt;
+            // Use live data if active, otherwise set vitals to null until live stream arrives
+            const hr = live ? live.heartRate : null;
+            const spo2 = live ? live.spo2 : null;
+            const temp = live ? live.temperature : null;
+            const motion = live ? live.motionState : 'RESTING';
+            const battery = live ? (live.battery ?? 100) : 100;
+            const fallDetected = live ? live.fallDetected || motion === 'FALL' : false;
+            const lastUpdate = live?.receivedAt || null;
 
             const hrStatus = getVitalStatus('hr', hr);
             const spo2Status = getVitalStatus('spo2', spo2);

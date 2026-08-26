@@ -227,8 +227,8 @@ export default function PatientDetail() {
   const doctorName = patient.assignedDoctor?.fullName;
   const formattedDoctorName = doctorName ? (doctorName.startsWith('Dr.') ? doctorName : `Dr. ${doctorName}`) : 'Unassigned';
 
-  const currentBattery = liveTelemetry?.battery ?? device?.batteryLevel;
-  const currentLastSeen = liveTelemetry?.recordedAt ?? device?.lastSeen;
+  const currentBattery = liveTelemetry?.battery ?? 100;
+  const currentLastSeen = liveTelemetry?.recordedAt || null;
 
   return (
     <div className="patient-detail">

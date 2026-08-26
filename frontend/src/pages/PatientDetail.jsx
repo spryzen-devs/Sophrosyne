@@ -123,8 +123,7 @@ export default function PatientDetail() {
     }
   }, [showEditModal, fetchDoctors]);
 
-  const initialTelemetry = telemetryData?.telemetry || telemetryData?.data || telemetryData;
-  const currentTelemetry = liveTelemetry || initialTelemetry || {};
+  const currentTelemetry = liveTelemetry || {};
   const alerts = alertsData?.alerts || alertsData?.data || (Array.isArray(alertsData) ? alertsData : []);
 
   if (patientLoading) return <Loader />;

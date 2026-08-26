@@ -65,7 +65,7 @@ model Device {
   lastSeen        DateTime?    @map("last_seen")
   status          DeviceStatus @default(OFFLINE) @map("status")
   registeredAt    DateTime     @default(now()) @map("created_at")
-  patient         Patient?     @relation(fields: [patientId], references: [id])
+  patient         Patient?     @relation(fields: [patientId], references: [id], onDelete: SetNull)
   telemetry       Telemetry[]
 
   @@index([deviceCode])
@@ -87,7 +87,7 @@ model Telemetry {
   battery      Int?        @map("battery")
   recordedAt   DateTime    @default(now()) @map("timestamp")
   alert        Alert?
-  device       Device      @relation(fields: [deviceId], references: [id])
+  device       Device      @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
   @@index([deviceId])
   @@index([recordedAt])
@@ -106,9 +106,9 @@ model Alert {
   resolvedBy  String?     @db.Uuid @map("resolved_by")
   resolvedAt  DateTime?   @map("resolved_at")
   createdAt   DateTime    @default(now()) @map("created_at")
-  patient     Patient     @relation(fields: [patientId], references: [id])
-  resolver    User?       @relation("ResolvedBy", fields: [resolvedBy], references: [id])
-  telemetry   Telemetry?  @relation(fields: [telemetryId], references: [id])
+  patient     Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  resolver    User?       @relation("ResolvedBy", fields: [resolvedBy], references: [id], onDelete: SetNull)
+  telemetry   Telemetry?  @relation(fields: [telemetryId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
   @@index([telemetryId])

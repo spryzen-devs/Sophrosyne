@@ -101,14 +101,67 @@ class AlertService {
       });
     }
 
-    // Create alerts in DB
+    // Fetch existing unresolved alerts for this patient to prevent 3-second duplicate spams
+    const activePatientAlerts = await prisma.alert.findMany({
+      where: {
+        patientId,
+        resolved: false,
+      },
+      select: { alertType: true },
+    });
+    const activeTypes = new Set(activePatientAlerts.map((a) => a.alertType));
+
+    // Fetch patient info for emergency contact notification if required
+    const patient = await prisma.patient.findUnique({
+      where: { id: patientId },
+      select: { id: true, firstName: true, lastName: true, patientCode: true, emergencyContact: true, phone: true },
+    });
+
+    // Create alerts in DB and handle emergency escalation to closed ones
     const createdAlerts = [];
     for (const alertData of alerts) {
+      // Skip if an active unresolved alert of this exact type already exists for this patient
+      if (activeTypes.has(alertData.alertType)) {
+        continue;
+      }
+
       const alert = await alertRepository.create(alertData);
       createdAlerts.push(alert);
+      activeTypes.add(alertData.alertType);
       
-      // Notify real-time clients
+      // Notify real-time clinical clients
       notificationService.notifyNewAlert(alert);
+
+      if (patient) {
+        // 1. Fall Detection: Immediate Emergency Dispatch to closed ones
+        if (alert.alertType === 'FALL_DETECTED') {
+          notificationService.notifyEmergencyContact(patient, alert);
+        }
+
+        // 2. Critical Heart Rate: Dispatch to closed ones ONLY if sustained across 5 consecutive telemetry frames (15s)
+        else if (alert.alertType === 'LOW_HEART_RATE' || alert.alertType === 'HIGH_HEART_RATE') {
+          const recentTelemetry = await prisma.telemetry.findMany({
+            where: { deviceId: telemetry.deviceId },
+            orderBy: { recordedAt: 'desc' },
+            take: 5,
+          });
+
+          if (recentTelemetry.length >= 5) {
+            const isSustainedLow = alert.alertType === 'LOW_HEART_RATE' &&
+              recentTelemetry.every((t) => t.heartRate !== null && t.heartRate !== undefined && t.heartRate < 40);
+
+            const isSustainedHigh = alert.alertType === 'HIGH_HEART_RATE' &&
+              recentTelemetry.every((t) => t.heartRate !== null && t.heartRate !== undefined && t.heartRate > 120);
+
+            if (isSustainedLow || isSustainedHigh) {
+              console.log(`⏳ Sustained BPM Alert verified across 5 consecutive frames (15s) for patient ${patient.patientCode}`);
+              notificationService.notifyEmergencyContact(patient, alert);
+            } else {
+              console.log(`ℹ️ Transient BPM Alert logged to DB, emergency dispatch to closed ones suppressed (< 5 frames sustained)`);
+            }
+          }
+        }
+      }
     }
 
     return createdAlerts;

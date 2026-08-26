@@ -99,8 +99,29 @@ class PatientRepository {
    * @returns {Promise<Object>}
    */
   async delete(id) {
-    return prisma.patient.delete({
-      where: { id },
+    return prisma.$transaction(async (tx) => {
+      // 1. Delete all alerts for this patient
+      await tx.alert.deleteMany({
+        where: { patientId: id },
+      });
+      // 2. Find device assigned to this patient
+      const device = await tx.device.findUnique({
+        where: { patientId: id },
+      });
+      if (device) {
+        // Delete telemetry records for device
+        await tx.telemetry.deleteMany({
+          where: { deviceId: device.id },
+        });
+        // Delete device
+        await tx.device.delete({
+          where: { id: device.id },
+        });
+      }
+      // 3. Delete patient
+      return tx.patient.delete({
+        where: { id },
+      });
     });
   }
 

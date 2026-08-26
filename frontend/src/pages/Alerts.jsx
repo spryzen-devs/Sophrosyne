@@ -37,8 +37,13 @@ export default function Alerts() {
     refetch();
   }, [refetch]);
 
+  const handleAlertResolvedEvent = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
   useSocket({
     onAlert: handleAlertEvent,
+    onAlertResolved: handleAlertResolvedEvent,
   });
 
   const alerts = data?.alerts || data?.data || (Array.isArray(data) ? data : []);

@@ -25,14 +25,23 @@ export default function DashboardLayout() {
   const basePath = '/' + location.pathname.split('/').filter(Boolean)[0];
   const title = pageTitles[basePath] || 'Sentinel';
 
-  const handleAlertSocket = useCallback((alert) => {
-    if (alert && (alert.severity === 'CRITICAL' || alert.severity === 'HIGH')) {
-      setHasAlerts(true);
+  const handleAlertResolvedSocket = useCallback(() => {
+    async function checkAlerts() {
+      try {
+        const result = await alertService.getActive({ limit: 10 });
+        const alerts = result.data || result;
+        const activeList = Array.isArray(alerts) ? alerts : [];
+        setHasAlerts(activeList.some((a) => !a.resolved));
+      } catch {
+        // Silently fail
+      }
     }
+    checkAlerts();
   }, []);
 
   useSocket({
     onAlert: handleAlertSocket,
+    onAlertResolved: handleAlertResolvedSocket,
   });
 
   // Check for active critical alerts

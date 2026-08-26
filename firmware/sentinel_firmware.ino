@@ -161,8 +161,8 @@ void loop() {
 
     // Startup Protection: Ignore fall triggers during the first 5 seconds
     if (millis() > 5000) {
-      // High-G Impact Spike Threshold (> 28.0 m/s^2 / 2.85g)
-      if (currentMag > 28.0) {
+      // High-G Impact Spike Threshold (> 18.0 m/s^2 / 1.83g impact)
+      if (currentMag > 18.0) {
         if (!latchedFall) {
           latchedFall = true;
           fallTriggerTime = millis();

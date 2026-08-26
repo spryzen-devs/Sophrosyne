@@ -95,8 +95,19 @@ class DeviceRepository {
    * @returns {Promise<Object>}
    */
   async delete(id) {
-    return prisma.device.delete({
-      where: { id },
+    return prisma.$transaction(async (tx) => {
+      // 1. Delete alerts associated with this device's telemetry
+      await tx.alert.deleteMany({
+        where: { telemetry: { deviceId: id } },
+      });
+      // 2. Delete all telemetry records for this device
+      await tx.telemetry.deleteMany({
+        where: { deviceId: id },
+      });
+      // 3. Delete the device
+      return tx.device.delete({
+        where: { id },
+      });
     });
   }
 

@@ -18,7 +18,7 @@ import Button from '../components/Button';
 import Modal from '../components/Modal';
 import Input from '../components/Input';
 import Select from '../components/Select';
-import { formatDate, formatEnum, timeAgo, formatAlertType, getHeartRateStatus, getSpo2Status } from '../utils/formatters';
+import { formatDate, formatEnum, timeAgo, formatAlertType, getHeartRateStatus, getSpo2Status, getTemperatureStatus } from '../utils/formatters';
 import { GENDERS, BLOOD_GROUPS } from '../utils/constants';
 import toast from 'react-hot-toast';
 import './PatientDetail.css';
@@ -55,6 +55,7 @@ export default function PatientDetail() {
       setLiveTelemetry({
         heartRate: data.heartRate ?? data.telemetry?.heartRate,
         spo2: data.spo2 ?? data.telemetry?.spo2,
+        temperature: data.temperature ?? data.telemetry?.temperature,
         motionState: data.motionState ?? data.telemetry?.motionState,
         fallDetected: data.fallDetected ?? data.telemetry?.fallDetected,
         battery: data.battery ?? data.telemetry?.battery,
@@ -286,6 +287,12 @@ export default function PatientDetail() {
               value={currentTelemetry.spo2}
               unit="%"
               status={getSpo2Status(currentTelemetry.spo2)}
+            />
+            <VitalCard
+              label="Room Temp"
+              value={currentTelemetry.temperature != null ? Number(currentTelemetry.temperature).toFixed(1) : null}
+              unit="°C"
+              status={getTemperatureStatus(currentTelemetry.temperature)}
             />
             <VitalCard
               label="Motion"

@@ -8,7 +8,7 @@ import Badge from '../components/Badge';
 import StatusDot from '../components/StatusDot';
 import Button from '../components/Button';
 import Loader from '../components/Loader';
-import { timeAgo, formatEnum, getHeartRateStatus, getSpo2Status } from '../utils/formatters';
+import { timeAgo, formatEnum, getHeartRateStatus, getSpo2Status, getTemperatureStatus } from '../utils/formatters';
 import toast from 'react-hot-toast';
 import './LiveMonitor.css';
 
@@ -133,6 +133,7 @@ export default function LiveMonitor() {
             // Use live data if available, otherwise fall back to latest
             const hr = live?.heartRate ?? patient.latestTelemetry?.heartRate;
             const spo2 = live?.spo2 ?? patient.latestTelemetry?.spo2;
+            const temp = live?.temperature ?? patient.latestTelemetry?.temperature;
             const motion = live?.motionState ?? patient.latestTelemetry?.motionState;
             const battery = live?.battery ?? device?.batteryLevel;
             const fallDetected = live?.fallDetected || motion === 'FALL';
@@ -140,6 +141,7 @@ export default function LiveMonitor() {
 
             const hrStatus = getVitalStatus('hr', hr);
             const spo2Status = getVitalStatus('spo2', spo2);
+            const tempStatus = getTemperatureStatus(temp);
             const isHighlighted = highlightedCards.has(patient.id);
 
             return (
@@ -176,6 +178,14 @@ export default function LiveMonitor() {
                     <span>
                       <span className="monitor-card__vital-value">{spo2 ?? '—'}</span>
                       <span className="monitor-card__vital-unit"> %</span>
+                    </span>
+                  </div>
+
+                  <div className={`monitor-card__vital ${getVitalClass(tempStatus)}`}>
+                    <span className="monitor-card__vital-label">Room Temp</span>
+                    <span>
+                      <span className="monitor-card__vital-value">{temp != null ? Number(temp).toFixed(1) : '—'}</span>
+                      <span className="monitor-card__vital-unit"> °C</span>
                     </span>
                   </div>
 

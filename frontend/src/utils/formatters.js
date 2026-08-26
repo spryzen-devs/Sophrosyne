@@ -83,6 +83,13 @@ export function getSpo2Status(spo2) {
   return 'normal';
 }
 
+export function getTemperatureStatus(temp) {
+  if (temp == null) return 'normal';
+  if (temp > 38.5 || temp < 35.0) return 'critical';
+  if (temp > 37.5 || temp < 36.0) return 'warning';
+  return 'normal';
+}
+
 /**
  * Get severity color token
  */

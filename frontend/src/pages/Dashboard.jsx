@@ -284,6 +284,7 @@ export default function Dashboard() {
               const dev = p.device || p.devices?.[0];
               const hr = p.latestTelemetry?.heartRate;
               const spo2 = p.latestTelemetry?.spo2;
+              const temp = p.latestTelemetry?.temperature;
 
               return (
                 <div
@@ -307,6 +308,11 @@ export default function Dashboard() {
                     {spo2 != null && (
                       <span className="live-patient-card__vital">
                         SpO2 {spo2}%
+                      </span>
+                    )}
+                    {temp != null && (
+                      <span className="live-patient-card__vital">
+                        Room Temp {Number(temp).toFixed(1)}°C
                       </span>
                     )}
                   </div>

@@ -58,15 +58,25 @@ class AlertService {
       });
     }
 
-    // Temperature Thresholds
-    if (telemetry.temperature !== null && telemetry.temperature !== undefined && telemetry.temperature > 38.0) {
-      alerts.push({
-        telemetryId: telemetry.id,
-        patientId,
-        severity: 'HIGH',
-        alertType: 'HIGH_TEMPERATURE',
-        message: `Warning: High temperature detected (${telemetry.temperature}°C).`,
-      });
+    // Ambient Room Temperature Thresholds (MPU6500 measures ambient/board temp, not patient body temp)
+    if (telemetry.temperature !== null && telemetry.temperature !== undefined) {
+      if (telemetry.temperature > 45.0) {
+        alerts.push({
+          telemetryId: telemetry.id,
+          patientId,
+          severity: 'HIGH',
+          alertType: 'HIGH_TEMPERATURE',
+          message: `Warning: Extreme ambient room heat detected (${telemetry.temperature}°C).`,
+        });
+      } else if (telemetry.temperature < 10.0) {
+        alerts.push({
+          telemetryId: telemetry.id,
+          patientId,
+          severity: 'MEDIUM',
+          alertType: 'HIGH_TEMPERATURE',
+          message: `Warning: Extreme ambient cold environment detected (${telemetry.temperature}°C).`,
+        });
+      }
     }
 
     // Fall Detection

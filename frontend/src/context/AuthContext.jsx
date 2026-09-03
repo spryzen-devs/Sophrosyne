@@ -90,6 +90,21 @@ export function AuthProvider({ children }) {
       if (error.code === 'ERR_NETWORK' || !error.response) {
         message = 'Unable to connect to backend server. Please verify backend is running.';
       }
+
+      // If message is a raw JSON string (e.g., from Zod or raw API dump), parse it to user-friendly format
+      if (typeof message === 'string' && (message.trim().startsWith('[') || message.trim().startsWith('{'))) {
+        try {
+          const parsed = JSON.parse(message);
+          if (Array.isArray(parsed)) {
+            message = parsed.map((err) => err.message || 'Invalid input').join(', ');
+          } else if (parsed && parsed.message) {
+            message = parsed.message;
+          }
+        } catch (e) {
+          // ignore parsing error
+        }
+      }
+
       dispatch({ type: 'AUTH_ERROR', payload: message });
       return { success: false, message };
     }

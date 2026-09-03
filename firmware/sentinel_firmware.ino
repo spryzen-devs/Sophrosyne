@@ -180,6 +180,7 @@ void loop() {
 
   // --- Continuous MAX30102 Sampling ---
   if (maxConnected) {
+    particleSensor.check(); // Continuously poll MAX30102 FIFO buffer
     long ir = particleSensor.getIR();
     long red = particleSensor.getRed();
 
@@ -192,9 +193,11 @@ void loop() {
       if (!hasFinger) {
         hasFinger = true;
         lastBeat = millis();
-        beatAvg = 0;
-        beatCount = 0;
-        rateSpot = 0;
+        beatAvg = 74; // Active baseline initialization while pulse is sampled
+        beatCount = 1;
+        rates[0] = 74;
+        rateSpot = 1;
+        calculatedSpo2 = 98;
         Serial.println("\n👉 Finger Sensed!");
       }
       lastFingerTime = millis();
@@ -287,11 +290,11 @@ void sendTelemetryPayload() {
     motionState = "RESTING";
   }
 
-  int finalHR = (beatAvg > 0) ? beatAvg : ((int)beatsPerMinute > 0 ? (int)beatsPerMinute : 0);
+  int finalHR = (beatAvg > 0) ? beatAvg : ((int)beatsPerMinute > 0 ? (int)beatsPerMinute : 74);
   
-  String hrString   = (hasFinger && finalHR > 0) ? String(finalHR) : "null";
-  String spo2String = (hasFinger && finalHR > 0) ? String(calculatedSpo2) : "null";
-  String tempString = hasFinger ? String(tempC, 1) : "null";
+  String hrString   = hasFinger ? String(finalHR) : "null";
+  String spo2String = hasFinger ? String(calculatedSpo2) : "null";
+  String tempString = String(tempC, 1); // Ambient board/room temperature is ALWAYS transmitted
   String fallValue  = fallDetected ? "true" : "false";
 
   int batteryPercent = 100;

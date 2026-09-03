@@ -30,6 +30,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "docx": "^9.7.1",
     "nodemon": "^3.1.14"
   }
 }

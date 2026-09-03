@@ -124,10 +124,17 @@
 }
 
 .login-card__error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 13px;
-  color: var(--red);
-  text-align: center;
+  color: #D93025;
+  background-color: #FCE8E6;
+  border: 1px solid #FAD2CF;
+  padding: 10px 14px;
+  border-radius: 10px;
   margin-top: -4px;
+  line-height: 1.4;
 }
 
 .login-card__submit {

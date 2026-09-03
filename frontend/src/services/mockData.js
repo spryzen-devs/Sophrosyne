@@ -1,7 +1,7 @@
 export const mockUser = {
   id: 'u1',
   fullName: 'Dr. Gregory House',
-  email: 'admin@sentinel.com',
+  email: 'admin@gmail.com',
   role: 'ADMIN',
   phone: '555-0199',
   createdAt: new Date(Date.now() - 30 * 86400000).toISOString()

@@ -26,11 +26,11 @@ async function main() {
 
   // 1. Seed Admin
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@sentinel.com' },
+    where: { email: 'admin@gmail.com' },
     update: { passwordHash: adminPasswordHash, role: 'ADMIN' },
     create: {
       fullName: 'Dr. Gregory House',
-      email: 'admin@sentinel.com',
+      email: 'admin@gmail.com',
       passwordHash: adminPasswordHash,
       role: 'ADMIN',
       phone: '555-0100',
@@ -41,7 +41,7 @@ async function main() {
   const doctor1 = await prisma.user.create({
     data: {
       fullName: 'Dr. John Watson',
-      email: 'dr.watson@sentinel.com',
+      email: 'dr.watson@gmail.com',
       passwordHash: watsonPasswordHash,
       role: 'DOCTOR',
       phone: '555-0101',
@@ -51,7 +51,7 @@ async function main() {
   const doctor2 = await prisma.user.create({
     data: {
       fullName: 'Dr. Allison Cameron',
-      email: 'dr.cameron@sentinel.com',
+      email: 'dr.cameron@gmail.com',
       passwordHash: cameronPasswordHash,
       role: 'DOCTOR',
       phone: '555-0102',
@@ -61,7 +61,7 @@ async function main() {
   const doctor3 = await prisma.user.create({
     data: {
       fullName: 'Dr. Robert Chase',
-      email: 'dr.chase@sentinel.com',
+      email: 'dr.chase@gmail.com',
       passwordHash: chasePasswordHash,
       role: 'DOCTOR',
       phone: '555-0103',

@@ -18,6 +18,9 @@ router.post('/doctors', protect, authorize('ADMIN'), validate(registerDoctorSche
 // GET /api/v1/auth/doctors - List all doctors (for assignment dropdown)
 router.get('/doctors', protect, authController.getDoctors);
 
+// DELETE /api/v1/auth/doctors/:id - Admin deletes a Doctor
+router.delete('/doctors/:id', protect, authorize('ADMIN'), authController.deleteDoctor);
+
 // POST /api/v1/auth/login
 router.post('/login', validate(loginSchema), authController.login);
 

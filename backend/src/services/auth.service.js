@@ -96,6 +96,22 @@ class AuthService {
   async getDoctors() {
     return authRepository.findDoctors();
   }
+
+  /**
+   * Delete a doctor user
+   * @param {string} id
+   * @returns {Promise<Object>}
+   */
+  async deleteDoctor(id) {
+    const doctor = await authRepository.findById(id);
+    if (!doctor || doctor.role !== 'DOCTOR') {
+      const error = new Error('Doctor not found');
+      error.statusCode = 404;
+      throw error;
+    }
+    await authRepository.deleteDoctor(id);
+    return { message: 'Doctor deleted successfully' };
+  }
 }
 
 export default new AuthService();

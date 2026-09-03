@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Activity } from 'lucide-react';
+import { Activity, AlertCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import Input from '../components/Input';
 import Button from '../components/Button';
@@ -72,7 +72,12 @@ export default function Login() {
                 required
               />
 
-              {error && <p className="login-card__error">{error}</p>}
+              {error && (
+                <div className="login-card__error" role="alert">
+                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                  <span>{error}</span>
+                </div>
+              )}
 
               <Button
                 type="submit"

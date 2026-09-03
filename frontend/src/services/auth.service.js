@@ -21,6 +21,11 @@ const authService = {
     return response.data;
   },
 
+  async deleteDoctor(id) {
+    const response = await api.delete(`/auth/doctors/${id}`);
+    return response.data;
+  },
+
   async getMe() {
     const response = await api.get('/auth/me');
     return response.data;

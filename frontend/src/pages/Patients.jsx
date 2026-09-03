@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, UserPlus } from 'lucide-react';
+import { Plus, UserPlus, Trash2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useFetch } from '../hooks/useFetch';
 import patientService from '../services/patient.service';
@@ -26,6 +26,7 @@ export default function Patients() {
   const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [showDoctorModal, setShowDoctorModal] = useState(false);
+  const [doctorTab, setDoctorTab] = useState('list'); // 'list' | 'add'
   const [creating, setCreating] = useState(false);
   const [creatingDoctor, setCreatingDoctor] = useState(false);
   const [doctors, setDoctors] = useState([]);
@@ -112,17 +113,39 @@ export default function Patients() {
 
   const handleCreateDoctor = async (e) => {
     e.preventDefault();
+    if (!doctorForm.email.toLowerCase().endsWith('@gmail.com')) {
+      toast.error('Email must be a valid Gmail address ending with @gmail.com');
+      return;
+    }
     setCreatingDoctor(true);
     try {
       await authService.registerDoctor({ ...doctorForm, role: 'DOCTOR' });
       toast.success(`Doctor ${doctorForm.fullName} created successfully! Credentials ready for login.`);
-      setShowDoctorModal(false);
       setDoctorForm({ fullName: '', email: '', password: '', phone: '' });
+      setDoctorTab('list');
       fetchDoctors();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create doctor');
     } finally {
       setCreatingDoctor(false);
+    }
+  };
+
+  const handleDeleteDoctor = async (doctor) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${doctor.fullName} (${doctor.email})? Any assigned patients will be unassigned.`
+      )
+    ) {
+      return;
+    }
+    try {
+      await authService.deleteDoctor(doctor.id);
+      toast.success(`Doctor ${doctor.fullName} deleted successfully`);
+      fetchDoctors();
+      refetch();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete doctor');
     }
   };
 
@@ -218,9 +241,12 @@ export default function Patients() {
             <Button
               variant="outline"
               icon={<UserPlus size={18} />}
-              onClick={() => setShowDoctorModal(true)}
+              onClick={() => {
+                setDoctorTab('list');
+                setShowDoctorModal(true);
+              }}
             >
-              Add Doctor
+              Manage Doctors
             </Button>
             <Button
               variant="primary"
@@ -249,53 +275,110 @@ export default function Patients() {
         />
       </Card>
 
-      {/* Add Doctor Modal (Admin Only) */}
+      {/* Doctor Management Modal (Admin Only) */}
       <Modal
         open={showDoctorModal}
         onClose={() => setShowDoctorModal(false)}
-        title="Add New Doctor Account"
+        title="Doctor Management"
         footer={
-          <>
-            <Button variant="text" onClick={() => setShowDoctorModal(false)}>Cancel</Button>
-            <Button variant="primary" loading={creatingDoctor} onClick={handleCreateDoctor}>Create Doctor</Button>
-          </>
+          doctorTab === 'add' ? (
+            <>
+              <Button variant="text" onClick={() => setDoctorTab('list')}>
+                Back to Doctors List
+              </Button>
+              <Button variant="primary" loading={creatingDoctor} onClick={handleCreateDoctor}>
+                Create Doctor
+              </Button>
+            </>
+          ) : (
+            <Button variant="text" onClick={() => setShowDoctorModal(false)}>
+              Close
+            </Button>
+          )
         }
       >
-        <form className="add-patient-form" onSubmit={handleCreateDoctor}>
-          <Input
-            id="doctor-fullname"
-            label="Full Name (e.g. Dr. John Watson)"
-            placeholder="Dr. Full Name"
-            value={doctorForm.fullName}
-            onChange={(e) => handleDoctorFormChange('fullName', e.target.value)}
-            required
-          />
-          <Input
-            id="doctor-email"
-            type="email"
-            label="Email Address"
-            placeholder="doctor@sentinel.com"
-            value={doctorForm.email}
-            onChange={(e) => handleDoctorFormChange('email', e.target.value)}
-            required
-          />
-          <Input
-            id="doctor-password"
-            type="password"
-            label="Password"
-            placeholder="At least 6 characters"
-            value={doctorForm.password}
-            onChange={(e) => handleDoctorFormChange('password', e.target.value)}
-            required
-          />
-          <Input
-            id="doctor-phone"
-            label="Phone Number"
-            placeholder="Optional"
-            value={doctorForm.phone}
-            onChange={(e) => handleDoctorFormChange('phone', e.target.value)}
-          />
-        </form>
+        <div className="doctor-management__tabs">
+          <button
+            type="button"
+            className={`doctor-management__tab ${doctorTab === 'list' ? 'doctor-management__tab--active' : ''}`}
+            onClick={() => setDoctorTab('list')}
+          >
+            Registered Doctors ({doctors.length})
+          </button>
+          <button
+            type="button"
+            className={`doctor-management__tab ${doctorTab === 'add' ? 'doctor-management__tab--active' : ''}`}
+            onClick={() => setDoctorTab('add')}
+          >
+            + Add New Doctor
+          </button>
+        </div>
+
+        {doctorTab === 'list' ? (
+          <div className="doctor-list">
+            {doctors.length === 0 ? (
+              <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '24px' }}>
+                No doctors registered yet. Click "+ Add New Doctor" above to register one.
+              </p>
+            ) : (
+              doctors.map((doc) => (
+                <div key={doc.id} className="doctor-item">
+                  <div className="doctor-item__info">
+                    <span className="doctor-item__name">{doc.fullName}</span>
+                    <span className="doctor-item__email">
+                      {doc.email} {doc.phone ? `• ${doc.phone}` : ''}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="doctor-item__delete"
+                    onClick={() => handleDeleteDoctor(doc)}
+                    title="Delete Doctor Account"
+                  >
+                    <Trash2 size={14} />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <form className="add-patient-form" onSubmit={handleCreateDoctor}>
+            <Input
+              id="doctor-fullname"
+              label="Full Name (e.g. Dr. John Watson)"
+              placeholder="Dr. Full Name"
+              value={doctorForm.fullName}
+              onChange={(e) => handleDoctorFormChange('fullName', e.target.value)}
+              required
+            />
+            <Input
+              id="doctor-email"
+              type="email"
+              label="Email Address (Gmail Only)"
+              placeholder="doctor@gmail.com"
+              value={doctorForm.email}
+              onChange={(e) => handleDoctorFormChange('email', e.target.value)}
+              required
+            />
+            <Input
+              id="doctor-password"
+              type="password"
+              label="Password"
+              placeholder="At least 6 characters"
+              value={doctorForm.password}
+              onChange={(e) => handleDoctorFormChange('password', e.target.value)}
+              required
+            />
+            <Input
+              id="doctor-phone"
+              label="Phone Number"
+              placeholder="Optional"
+              value={doctorForm.phone}
+              onChange={(e) => handleDoctorFormChange('phone', e.target.value)}
+            />
+          </form>
+        )}
       </Modal>
 
       {/* Add Patient Modal */}

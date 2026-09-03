@@ -83,8 +83,18 @@ export const validate = (schema) => (req, res, next) => {
     next();
   } catch (error) {
     let message = error.message;
-    if (error.errors && Array.isArray(error.errors)) {
-      message = error.errors.map((err) => err.message).join(', ');
+    const issues = error.issues || error.errors;
+    if (Array.isArray(issues) && issues.length > 0) {
+      message = issues.map((err) => err.message || 'Invalid input').join(', ');
+    } else if (typeof message === 'string' && message.trim().startsWith('[')) {
+      try {
+        const parsed = JSON.parse(message);
+        if (Array.isArray(parsed)) {
+          message = parsed.map((err) => err.message || 'Invalid input').join(', ');
+        }
+      } catch (e) {
+        // keep message as is
+      }
     }
     const validationError = new Error(message);
     validationError.statusCode = 400;

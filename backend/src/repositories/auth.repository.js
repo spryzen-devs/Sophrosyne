@@ -75,6 +75,22 @@ class AuthRepository {
       orderBy: { fullName: 'asc' },
     });
   }
+
+  /**
+   * Delete a doctor user by ID
+   * @param {string} id
+   * @returns {Promise<Object>}
+   */
+  async deleteDoctor(id) {
+    await prisma.patient.updateMany({
+      where: { assignedDoctorId: id },
+      data: { assignedDoctorId: null },
+    });
+
+    return prisma.user.delete({
+      where: { id },
+    });
+  }
 }
 
 export default new AuthRepository();

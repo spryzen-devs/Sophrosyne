@@ -98,6 +98,24 @@ class AuthController {
       next(error);
     }
   }
+
+  /**
+   * Delete a doctor (Admin only)
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
+  async deleteDoctor(req, res, next) {
+    try {
+      await authService.deleteDoctor(req.params.id);
+      res.status(200).json({
+        success: true,
+        message: 'Doctor deleted successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new AuthController();

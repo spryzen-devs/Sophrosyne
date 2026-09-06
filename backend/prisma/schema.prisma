@@ -157,6 +157,7 @@ enum MotionState {
   WALKING
   RUNNING
   FALL
+  FAST_UPWARD_PULL
 }
 
 enum Severity {

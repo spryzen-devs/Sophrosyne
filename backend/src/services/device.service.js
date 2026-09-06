@@ -26,6 +26,10 @@ class DeviceService {
     }
 
     return deviceRepository.create({
+      firmwareVersion: '1.4.2',
+      hardwareVersion: '2.0',
+      ipAddress: '192.168.1.101',
+      batteryLevel: 95,
       ...deviceData,
       deviceCode,
     });

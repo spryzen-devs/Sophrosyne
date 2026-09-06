@@ -23,7 +23,7 @@
 const char* WIFI_SSID     = "OPPO A3x 5G";       // Wi-Fi network SSID
 const char* WIFI_PASSWORD = "Sr@20007";          // Wi-Fi Password
 const char* SERVER_URL    = "http://10.246.138.76:5000/api/v1/telemetry"; 
-const char* DEVICE_CODE   = "DEV-0001";              
+const char* DEVICE_CODE   = "DEV-0002";              
 
 // Telemetry Transmission Interval (3 seconds)
 const unsigned long SEND_INTERVAL = 3000;            
@@ -61,9 +61,13 @@ unsigned long lastSendTime = 0;
 float maxAccelMag = 0.0;
 float minAccelMag = 999.0;
 
-// Fall Detection Variables
+// Fall & Upward Motion Detection Variables
+bool freeFallDetected = false;
+unsigned long freeFallTime = 0;
 bool latchedFall = false;
 unsigned long fallTriggerTime = 0;
+bool latchedUpwardPull = false;
+unsigned long upwardPullTriggerTime = 0;
 
 bool mpuConnected = false;
 bool maxConnected = false;
@@ -159,14 +163,43 @@ void loop() {
     if (currentMag > maxAccelMag) maxAccelMag = currentMag;
     if (currentMag < minAccelMag) minAccelMag = currentMag;
 
-    // Startup Protection: Ignore fall triggers during the first 5 seconds
+    // Track Downward Unweighting / Free-Fall phase (< 7.5 m/s^2 or < ~0.76g)
+    // When sensor is dropped or moved down fast, acceleration unweights below gravity before impact
+    if (currentMag < 7.5) {
+      if (!freeFallDetected) {
+        freeFallDetected = true;
+        freeFallTime = millis();
+        Serial.println("\n📉 DOWNWARD MOTION / FREE-FALL DETECTED (Low-G Unweighting)");
+      }
+    }
+
+    // Downward unweighting / free-fall state timeout after 1200ms
+    if (freeFallDetected && (millis() - freeFallTime > 1200)) {
+      freeFallDetected = false;
+    }
+
+    // Startup Protection: Ignore fall/pull triggers during the first 5 seconds
     if (millis() > 5000) {
-      // High-G Impact Spike Threshold (> 18.0 m/s^2 / 1.83g impact)
-      if (currentMag > 18.0) {
-        if (!latchedFall) {
-          latchedFall = true;
-          fallTriggerTime = millis();
-          Serial.println("\n🚨 IMPACT DETECTED! Fall alert triggered.");
+      // High-G Spike Threshold (> 17.5 m/s^2 / 1.78g)
+      if (currentMag > 17.5) {
+        // Condition A: Downward Motion / Drop / Impact (Preceded by downward unweighting/free-fall drop < 7.5 m/s^2)
+        if (freeFallDetected || minAccelMag < 7.5) {
+          if (!latchedFall) {
+            latchedFall = true;
+            fallTriggerTime = millis();
+            freeFallDetected = false;
+            latchedUpwardPull = false;
+            Serial.println("\n🚨 IMPACT / FALL DETECTED! (Downward unweighting followed by impact)");
+          }
+        }
+        // Condition B: Fast Upward Pull (Direct upward acceleration spike g.z > 1.2 / az > 12.0 m/s^2 WITHOUT prior downward unweighting)
+        else if (!freeFallDetected && (g.z > 1.2 || az > 12.0)) {
+          if (!latchedUpwardPull) {
+            latchedUpwardPull = true;
+            upwardPullTriggerTime = millis();
+            latchedFall = false; // Ensure it is NOT marked as a fall
+            Serial.println("\n⬆️ FAST UPWARD PULL DETECTED! (Direct upward acceleration without downward motion)");
+          }
         }
       }
     }
@@ -176,6 +209,12 @@ void loop() {
   if (latchedFall && (millis() - fallTriggerTime > 10000)) {
     latchedFall = false;
     Serial.println("✅ Fall alert window completed. Returning to normal monitoring.");
+  }
+
+  // Auto-clear Fast Upward Pull state after 6 seconds
+  if (latchedUpwardPull && (millis() - upwardPullTriggerTime > 6000)) {
+    latchedUpwardPull = false;
+    Serial.println("✅ Fast upward pull window completed.");
   }
 
   // --- Continuous MAX30102 Sampling ---
@@ -282,6 +321,8 @@ void sendTelemetryPayload() {
   String motionState = "RESTING";
   if (fallDetected) {
     motionState = "FALL";
+  } else if (latchedUpwardPull) {
+    motionState = "FAST_UPWARD_PULL";
   } else if (accelDelta > 6.0) {
     motionState = "RUNNING";
   } else if (accelDelta > 2.8) {

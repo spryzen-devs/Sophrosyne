@@ -3,6 +3,14 @@ import { z } from 'zod';
 /**
  * Authentication Validators
  */
+const strictPhoneSchema = z
+  .string()
+  .refine((val) => !val || /^\d{10}$/.test(val.trim()), {
+    message: 'Phone number must be exactly 10 digits',
+  })
+  .optional()
+  .nullable();
+
 export const registerSchema = z.object({
   body: z.object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters'),
@@ -16,7 +24,7 @@ export const registerSchema = z.object({
     role: z.enum(['ADMIN', 'DOCTOR'], {
       errorMap: () => ({ message: 'Role must be ADMIN or DOCTOR' }),
     }),
-    phone: z.string().optional(),
+    phone: strictPhoneSchema,
   }),
 });
 
@@ -31,7 +39,7 @@ export const registerDoctorSchema = z.object({
       }),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     role: z.enum(['ADMIN', 'DOCTOR']).optional().default('DOCTOR'),
-    phone: z.string().optional(),
+    phone: strictPhoneSchema,
   }),
 });
 

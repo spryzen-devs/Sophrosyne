@@ -102,3 +102,27 @@ export function getSeverityColor(severity) {
     default: return { text: 'var(--text-secondary)', bg: 'var(--surface)' };
   }
 }
+
+/**
+ * Format last signal timestamp into human readable text or exact date & time
+ */
+export function formatLastSignalText(timestamp) {
+  if (!timestamp) return 'No signal received';
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) return 'No signal received';
+
+  const diffMs = Date.now() - date.getTime();
+  const secondsAgo = Math.floor(diffMs / 1000);
+
+  if (secondsAgo < 0 || secondsAgo < 5) return 'Just now';
+  if (secondsAgo < 60) return `${secondsAgo}s ago`;
+  if (secondsAgo < 3600) {
+    const mins = Math.floor(secondsAgo / 60);
+    return `${mins}m ago`;
+  }
+
+  const dateStr = date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+  const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  return `${dateStr}, ${timeStr}`;
+}
+

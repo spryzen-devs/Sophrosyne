@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useFetch } from '../hooks/useFetch';
 import { useSocket } from '../hooks/useSocket';
+import { useLaptopBattery } from '../hooks/useLaptopBattery';
 import patientService from '../services/patient.service';
 import authService from '../services/auth.service';
 import telemetryService from '../services/telemetry.service';
@@ -32,6 +33,7 @@ export default function PatientDetail() {
   const [doctors, setDoctors] = useState([]);
   const [liveTelemetry, setLiveTelemetry] = useState(null);
   const [resolvingAlertId, setResolvingAlertId] = useState(null);
+  const laptopBattery = useLaptopBattery();
 
   const { data: patientData, loading: patientLoading, refetch } = useFetch(
     () => patientService.getById(id), [id]
@@ -135,6 +137,14 @@ export default function PatientDetail() {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+    if (editForm.phone && !/^\d{10}$/.test(editForm.phone.trim())) {
+      toast.error('Phone number must be exactly 10 digits');
+      return;
+    }
+    if (editForm.emergencyContact && !/^\d{10}$/.test(editForm.emergencyContact.trim())) {
+      toast.error('Emergency contact number must be exactly 10 digits');
+      return;
+    }
     setUpdating(true);
     try {
       const payload = { ...editForm };
@@ -226,8 +236,42 @@ export default function PatientDetail() {
   const doctorName = patient.assignedDoctor?.fullName;
   const formattedDoctorName = doctorName ? (doctorName.startsWith('Dr.') ? doctorName : `Dr. ${doctorName}`) : 'Unassigned';
 
-  const currentBattery = liveTelemetry?.battery ?? 100;
-  const currentLastSeen = liveTelemetry?.recordedAt || null;
+  const fetchedLatestTelemetry = telemetryData?.data || telemetryData?.telemetry || (telemetryData?.recordedAt ? telemetryData : null);
+
+  const activeTelemetry = (liveTelemetry && liveTelemetry.recordedAt && (Date.now() - new Date(liveTelemetry.recordedAt).getTime() < 30000))
+    ? liveTelemetry
+    : (fetchedLatestTelemetry && fetchedLatestTelemetry.recordedAt && (Date.now() - new Date(fetchedLatestTelemetry.recordedAt).getTime() < 30000))
+    ? fetchedLatestTelemetry
+    : null;
+
+  // Determine if live telemetry is actively arriving over USB/socket (within last 30s)
+  const isDeviceActive = Boolean(activeTelemetry);
+
+  const lastRecordedAt = liveTelemetry?.recordedAt || fetchedLatestTelemetry?.recordedAt || device?.lastSeen || null;
+
+  const displayBattery = (activeTelemetry && activeTelemetry.battery != null)
+    ? activeTelemetry.battery
+    : (laptopBattery != null ? laptopBattery : (device?.batteryLevel ?? 100));
+
+  const formatLastSignalText = (timestamp) => {
+    if (!timestamp) return '—';
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return '—';
+
+    const diffMs = Date.now() - date.getTime();
+    const secondsAgo = Math.floor(diffMs / 1000);
+
+    if (secondsAgo < 0 || secondsAgo < 5) return 'Just now';
+    if (secondsAgo < 60) return `${secondsAgo}s ago`;
+    if (secondsAgo < 3600) {
+      const mins = Math.floor(secondsAgo / 60);
+      return `${mins}m ago`;
+    }
+
+    const dateStr = date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+    const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    return `${dateStr}, ${timeStr}`;
+  };
 
   return (
     <div className="patient-detail">
@@ -290,11 +334,11 @@ export default function PatientDetail() {
       <Card title="Assigned Device">
         {device ? (
           <div className="patient-detail__device-info">
-            <StatusDot status={device.status?.toLowerCase() === 'online' ? 'online' : 'offline'} />
+            <StatusDot status={isDeviceActive ? 'online' : 'offline'} />
             <div>
               <div className="patient-detail__device-code">{device.deviceCode}</div>
               <div className="patient-detail__device-meta">
-                Battery: {currentBattery ?? '—'}% · Last seen: {timeAgo(currentLastSeen)}
+                Battery: {isDeviceActive && displayBattery != null ? `${displayBattery}%` : '—'} · Last seen: {formatLastSignalText(lastRecordedAt)}
               </div>
             </div>
           </div>
@@ -304,42 +348,40 @@ export default function PatientDetail() {
       </Card>
 
       {/* Latest Vitals */}
-      {currentTelemetry && (
-        <Card title="Latest Vitals">
-          <div className="patient-detail__vitals-row">
-            <VitalCard
-              label="Heart Rate"
-              value={currentTelemetry.heartRate}
-              unit="BPM"
-              status={getHeartRateStatus(currentTelemetry.heartRate)}
-            />
-            <VitalCard
-              label="SpO2"
-              value={currentTelemetry.spo2}
-              unit="%"
-              status={getSpo2Status(currentTelemetry.spo2)}
-            />
-            <VitalCard
-              label="Room Temp"
-              value={currentTelemetry.temperature != null ? Number(currentTelemetry.temperature).toFixed(1) : null}
-              unit="°C"
-              status={getTemperatureStatus(currentTelemetry.temperature)}
-            />
-            <VitalCard
-              label="Motion"
-              value={formatEnum(currentTelemetry.motionState)}
-              status={currentTelemetry.motionState === 'FALL' ? 'critical' : 'normal'}
-            />
-            <VitalCard
-              label="Battery"
-              value={currentTelemetry.battery}
-              unit="%"
-              barValue={currentTelemetry.battery}
-              barColor={currentTelemetry.battery < 20 ? 'var(--red)' : 'var(--green)'}
-            />
-          </div>
-        </Card>
-      )}
+      <Card title="Latest Vitals">
+        <div className="patient-detail__vitals-row">
+          <VitalCard
+            label="Heart Rate"
+            value={isDeviceActive ? activeTelemetry?.heartRate : null}
+            unit="BPM"
+            status={isDeviceActive ? getHeartRateStatus(activeTelemetry?.heartRate) : 'normal'}
+          />
+          <VitalCard
+            label="SpO2"
+            value={isDeviceActive ? activeTelemetry?.spo2 : null}
+            unit="%"
+            status={isDeviceActive ? getSpo2Status(activeTelemetry?.spo2) : 'normal'}
+          />
+          <VitalCard
+            label="Room Temp"
+            value={isDeviceActive && activeTelemetry?.temperature != null ? Number(activeTelemetry.temperature).toFixed(1) : null}
+            unit="°C"
+            status={isDeviceActive ? getTemperatureStatus(activeTelemetry?.temperature) : 'normal'}
+          />
+          <VitalCard
+            label="Motion"
+            value={isDeviceActive && activeTelemetry?.motionState ? formatEnum(activeTelemetry.motionState) : null}
+            status={isDeviceActive && activeTelemetry?.motionState === 'FALL' ? 'critical' : 'normal'}
+          />
+          <VitalCard
+            label="Battery"
+            value={isDeviceActive ? displayBattery : null}
+            unit={isDeviceActive ? '%' : ''}
+            barValue={isDeviceActive ? displayBattery : null}
+            barColor={displayBattery != null && displayBattery < 20 ? 'var(--red)' : 'var(--green)'}
+          />
+        </div>
+      </Card>
 
       {/* Alert History */}
       <Card title="Alert History" flush>

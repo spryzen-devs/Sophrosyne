@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useFetch } from '../hooks/useFetch';
+import { useLaptopBattery } from '../hooks/useLaptopBattery';
 import deviceService from '../services/device.service';
 import Card from '../components/Card';
 import SearchBar from '../components/SearchBar';
@@ -14,7 +15,7 @@ import Input from '../components/Input';
 import Select from '../components/Select';
 import Badge from '../components/Badge';
 import StatusDot from '../components/StatusDot';
-import { timeAgo } from '../utils/formatters';
+import { timeAgo, formatLastSignalText } from '../utils/formatters';
 import toast from 'react-hot-toast';
 import './Devices.css';
 
@@ -80,6 +81,8 @@ export default function Devices() {
     }
   };
 
+  const laptopBattery = useLaptopBattery();
+
   const columns = [
     { key: 'deviceCode', label: 'Device Code' },
     {
@@ -90,23 +93,29 @@ export default function Devices() {
     {
       key: 'status',
       label: 'Status',
-      render: (val) => (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <StatusDot status={val?.toLowerCase() === 'online' ? 'online' : 'offline'} />
-          {val}
-        </span>
-      ),
+      render: (_, row) => {
+        const isDevActive = Boolean(row.lastSeen && (Date.now() - new Date(row.lastSeen).getTime() < 30000));
+        return (
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <StatusDot status={isDevActive ? 'online' : 'offline'} />
+            {isDevActive ? 'ONLINE' : 'OFFLINE'}
+          </span>
+        );
+      },
     },
     {
       key: 'batteryLevel',
       label: 'Battery',
-      render: (val) => val != null ? `${val}%` : '—',
+      render: (val, row) => {
+        const isDevActive = Boolean(row.lastSeen && (Date.now() - new Date(row.lastSeen).getTime() < 30000));
+        return isDevActive && (val ?? laptopBattery) != null ? `${val ?? laptopBattery}%` : '—';
+      },
     },
     { key: 'firmwareVersion', label: 'Firmware' },
     {
       key: 'lastSeen',
       label: 'Last Seen',
-      render: (val) => timeAgo(val),
+      render: (val) => formatLastSignalText(val),
     },
     {
       key: 'actions',

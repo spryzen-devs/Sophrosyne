@@ -33,7 +33,7 @@ async function main() {
       email: 'admin@gmail.com',
       passwordHash: adminPasswordHash,
       role: 'ADMIN',
-      phone: '555-0100',
+      phone: '9876543210',
     },
   });
 
@@ -44,7 +44,7 @@ async function main() {
       email: 'dr.watson@gmail.com',
       passwordHash: watsonPasswordHash,
       role: 'DOCTOR',
-      phone: '555-0101',
+      phone: '9876543211',
     },
   });
 
@@ -54,7 +54,7 @@ async function main() {
       email: 'dr.cameron@gmail.com',
       passwordHash: cameronPasswordHash,
       role: 'DOCTOR',
-      phone: '555-0102',
+      phone: '9876543212',
     },
   });
 
@@ -64,7 +64,7 @@ async function main() {
       email: 'dr.chase@gmail.com',
       passwordHash: chasePasswordHash,
       role: 'DOCTOR',
-      phone: '555-0103',
+      phone: '9876543213',
     },
   });
 
@@ -98,8 +98,8 @@ async function main() {
       gender: 'FEMALE',
       dateOfBirth: new Date('1988-09-25'),
       bloodGroup: 'A-',
-      phone: '555-0202',
-      emergencyContact: '555-0902',
+      phone: '9876543214',
+      emergencyContact: '9876543215',
       address: '456 Wellness Blvd, Metro',
       status: 'ACTIVE',
       createdBy: admin.id,
@@ -117,8 +117,8 @@ async function main() {
       gender: 'MALE',
       dateOfBirth: new Date('1974-01-15'),
       bloodGroup: 'B+',
-      phone: '555-0203',
-      emergencyContact: '555-0903',
+      phone: '9876543216',
+      emergencyContact: '9876543217',
       address: '789 Care Lane, Suburbia',
       status: 'ACTIVE',
       createdBy: admin.id,

@@ -90,13 +90,20 @@ export default function Patients() {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    if (form.phone && !/^\d{10}$/.test(form.phone.trim())) {
+      toast.error('Phone number must be exactly 10 digits');
+      return;
+    }
+    if (form.emergencyContact && !/^\d{10}$/.test(form.emergencyContact.trim())) {
+      toast.error('Emergency contact number must be exactly 10 digits');
+      return;
+    }
     setCreating(true);
     try {
-      const payload = { ...form };
-      Object.keys(payload).forEach((key) => {
-        if (payload[key] === '') delete payload[key];
+      await patientService.create({
+        ...form,
+        assignedDoctorId: form.assignedDoctorId || null,
       });
-      await patientService.create(payload);
       toast.success('Patient created successfully');
       setShowModal(false);
       setForm({
@@ -115,6 +122,10 @@ export default function Patients() {
     e.preventDefault();
     if (!doctorForm.email.toLowerCase().endsWith('@gmail.com')) {
       toast.error('Email must be a valid Gmail address ending with @gmail.com');
+      return;
+    }
+    if (doctorForm.phone && !/^\d{10}$/.test(doctorForm.phone.trim())) {
+      toast.error('Doctor phone number must be exactly 10 digits');
       return;
     }
     setCreatingDoctor(true);

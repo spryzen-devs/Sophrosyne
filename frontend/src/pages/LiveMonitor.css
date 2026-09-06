@@ -1,19 +1,141 @@
-.live-monitor {
+/* ===========================================================================
+   Sophrosyne Live Monitor Page Styles (Quiet, Human, Clean Clinical Redesign)
+   =========================================================================== */
+
+.live-monitor-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 22px;
+  max-width: 1480px;
+  margin: 0 auto;
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Alert banner */
+/* ===========================================================================
+   1. TOP HEADER (SIMPLIFIED & QUIET)
+   =========================================================================== */
+.live-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 4px 0 6px 0;
+}
+
+.live-header__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.live-header__mobile-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.live-header__title {
+  font-size: 26px;
+  font-weight: 600;
+  color: #102A72;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.live-header__subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  color: #64748B;
+  margin-top: 2px;
+}
+
+.live-header__right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.live-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.live-header__icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  color: #475569;
+  cursor: pointer;
+  transition: all 180ms ease;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+}
+
+.live-header__icon-btn:hover {
+  border-color: #CBD5E1;
+  color: var(--blue);
+  transform: translateY(-1px);
+}
+
+.live-header__bell-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--red);
+  border: 2px solid #FFFFFF;
+}
+
+.live-header__datetime {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+  border-left: 1px solid #E2E8F0;
+  padding-left: 18px;
+}
+
+.live-header__date {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.live-header__time {
+  font-size: 14px;
+  font-weight: 600;
+  color: #102A72;
+}
+
+/* ===========================================================================
+   ALERT BANNER (DATA-DRIVEN CRITICAL WARNING)
+   =========================================================================== */
 .live-monitor__alert-banner {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background-color: var(--red-light);
+  gap: 14px;
+  padding: 14px 20px;
+  background: #FFF1F2;
   border-left: 4px solid var(--red);
-  border-radius: var(--radius-md);
-  animation: modal-fade-in 150ms ease;
+  border-radius: 14px;
+  border: 1px solid #FECDD3;
+  box-shadow: 0 4px 16px rgba(225, 29, 72, 0.06);
 }
 
 .live-monitor__alert-icon {
@@ -27,7 +149,7 @@
 
 .live-monitor__alert-patient {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -42,137 +164,668 @@
   flex-shrink: 0;
 }
 
-/* Patient grid */
-.live-monitor__grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+.live-monitor__empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid #E2E8F0;
+  color: var(--text-secondary);
+  font-size: 15px;
 }
 
-/* Patient card */
-.monitor-card {
-  background-color: var(--white);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  padding: 20px;
+/* ===========================================================================
+   2. HERO CARD (MOUNTAIN/LAKE IMAGE USED ONLY INSIDE THIS COMPONENT)
+   =========================================================================== */
+.live-hero-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px 40px;
+  border-radius: 24px;
+  background-image: url('/images/hero section.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 
+    0 10px 30px -4px rgba(15, 23, 42, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+}
+
+.live-hero-card__overlay {
+  display: none;
+}
+
+.live-hero-card__left {
+  position: relative;
+  z-index: 1;
+}
+
+.live-hero-card__eyebrow {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: #102A72;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+}
+
+.live-hero-card__count-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 2px 0 4px 0;
+}
+
+.live-hero-card__count {
+  font-size: 48px;
+  font-weight: 700;
+  color: #0066FF;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+}
+
+.live-hero-card__count-label {
+  font-size: 42px;
+  font-weight: 600;
+  color: #102A72;
+  letter-spacing: -0.025em;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+}
+
+.live-hero-card__subnote {
+  font-size: 13.5px;
+  color: #334155;
+  font-weight: 500;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+}
+
+.live-hero-card__right {
+  position: relative;
+  z-index: 1;
+}
+
+.live-hero-card__quote {
+  font-style: italic;
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+  text-align: right;
+  line-height: 1.5;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+}
+
+/* ===========================================================================
+   3. PRIMARY PATIENT CARD (CLEAN & INTENTIONAL)
+   =========================================================================== */
+.primary-patient-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 24px;
+  padding: 28px 32px 32px 32px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
   transition: all 200ms ease;
 }
 
-.monitor-card--fall {
-  background-color: var(--red-light);
-  border-left: 4px solid var(--red);
+.primary-patient-card--highlighted {
+  border-color: #D97706;
+  box-shadow: 0 4px 20px rgba(217, 119, 6, 0.1);
 }
 
-.monitor-card--highlighted {
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--yellow);
+.primary-patient-card--fall {
+  background: #FFF1F2;
+  border-color: #FECDD3;
 }
 
-.monitor-card__header {
+.primary-patient-card__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #F1F5F9;
 }
 
-.monitor-card__name {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.monitor-card__device-row {
+.primary-patient-card__identity {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 16px;
 }
 
-.monitor-card__device-code {
-  font-size: 12px;
-  color: var(--text-tertiary);
+.primary-patient-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #EFF6FF;
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  border: 1px solid #DBEAFE;
+  flex-shrink: 0;
 }
 
-.monitor-card__code {
-  font-size: 12px;
-  color: var(--text-tertiary);
+.primary-patient-card__name {
+  font-size: 19px;
+  font-weight: 600;
+  color: #0F172A;
+  letter-spacing: -0.015em;
 }
 
-.monitor-card__vitals {
+.primary-patient-card__codes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #94A3B8;
+  margin-top: 2px;
+}
+
+.primary-patient-card__dot-sep {
+  color: #CBD5E1;
+}
+
+.primary-patient-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.primary-patient-card__signal-time {
+  font-size: 13px;
+  color: #64748B;
+}
+
+.primary-patient-card__battery {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.primary-patient-card__battery-icon {
+  color: #059669;
+}
+
+.primary-patient-card__details-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+  border-radius: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.primary-patient-card__details-btn:hover {
+  background: #DBEAFE;
+  transform: translateX(2px);
+}
+
+/* ===========================================================================
+   VITAL CARDS GRID
+   =========================================================================== */
+.primary-patient-card__vitals {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 24px;
 }
 
-.monitor-card__vital {
+.vital-card {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 18px 20px;
+  transition: all 180ms ease;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 10px 12px;
-  background-color: var(--surface);
-  border-radius: var(--radius-sm);
+  justify-content: space-between;
+  min-height: 156px;
 }
 
-.monitor-card--fall .monitor-card__vital {
-  background-color: rgba(255, 255, 255, 0.6);
+.vital-card:hover {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
 }
 
-.monitor-card__vital--warning {
-  background-color: var(--yellow-light);
+.vital-card--warning {
+  background: #FFFBEB;
+  border-color: #FDE68A;
 }
 
-.monitor-card__vital--critical {
-  background-color: var(--red-light);
+.vital-card--critical {
+  background: #FFF1F2;
+  border-color: #FECDD3;
 }
 
-.monitor-card__vital-label {
-  font-size: 11px;
+.vital-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vital-card__icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.vital-card__icon-wrap--red { background: #FEF2F2; }
+.vital-card__icon-wrap--blue { background: #EFF6FF; }
+.vital-card__icon-wrap--cyan { background: #ECFEFF; }
+.vital-card__icon-wrap--indigo { background: #EEF2FF; }
+
+.vital-card__label {
+  font-size: 12.5px;
   font-weight: 500;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #64748B;
 }
 
-.monitor-card__vital-value {
-  font-size: 24px;
+.vital-card__value-row {
+  display: flex;
+  align-items: baseline;
+  margin-top: 8px;
+}
+
+.vital-card__value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.vital-card__value--text {
+  font-size: 22px;
   font-weight: 600;
-  color: var(--text-primary);
-  line-height: 32px;
 }
 
-.monitor-card__vital--warning .monitor-card__vital-value {
-  color: #7A6400;
+.vital-card__unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: #94A3B8;
+  margin-left: 6px;
 }
 
-.monitor-card__vital--critical .monitor-card__vital-value {
-  color: var(--red);
+/* Smooth Waveforms */
+.vital-waveform {
+  height: 36px;
+  width: 100%;
+  margin: 8px 0 4px 0;
+  overflow: hidden;
 }
 
-.monitor-card__vital-unit {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-tertiary);
+.vital-waveform__svg {
+  width: 100%;
+  height: 100%;
 }
 
-.monitor-card__footer {
+.vital-waveform__path--anim {
+  stroke-dasharray: 600;
+  animation: wave-dash 8s linear infinite;
+}
+
+.vital-waveform__path--slow {
+  stroke-dasharray: 600;
+  animation: wave-dash 15s linear infinite;
+}
+
+@keyframes wave-dash {
+  0% { stroke-dashoffset: 600; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.vital-card__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 12px;
+  font-size: 11.5px;
+  color: #94A3B8;
+  margin-top: auto;
 }
 
-.monitor-card__timestamp {
-  font-size: 12px;
-  color: var(--text-tertiary);
+.vital-card__range {
+  font-weight: 400;
 }
 
-.monitor-card__motion {
-  font-size: 12px;
+.vital-card__warning-badge {
+  font-weight: 600;
+  font-size: 11px;
 }
 
-/* Responsive */
+.vital-card__warning-badge--warning { color: #D97706; }
+.vital-card__warning-badge--critical { color: #E11D48; }
+
+/* ===========================================================================
+   4. OTHER PATIENTS SECTION
+   =========================================================================== */
+.other-patients-section {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.other-patients-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.other-patients-section__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #102A72;
+  letter-spacing: -0.01em;
+}
+
+.other-patients-section__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.other-patients__sort {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  font-size: 12.5px;
+  color: #64748B;
+  cursor: pointer;
+}
+
+.other-patients__sort-val {
+  color: #102A72;
+}
+
+.other-patients__nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.other-patients__nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.other-patients__nav-btn:hover {
+  border-color: #CBD5E1;
+  color: var(--blue);
+}
+
+.other-patients__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.other-patient-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: all 180ms ease;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+}
+
+.other-patient-card:hover {
+  border-color: #CBD5E1;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+}
+
+.other-patient-card--observe {
+  border-color: #FDE68A;
+  background: #FFFBEB;
+}
+
+.other-patient-card--critical {
+  border-color: #FECDD3;
+  background: #FFF1F2;
+}
+
+.other-patient-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.other-patient-card__identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.other-patient-card__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #EFF6FF;
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.other-patient-card__name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.other-patient-card__codes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  color: #94A3B8;
+}
+
+.other-patient-card__badge {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.other-patient-card__badge--observe {
+  color: #D97706;
+  background: #FEF3C7;
+}
+
+.other-patient-card__badge--critical {
+  color: #E11D48;
+  background: #FFE4E6;
+}
+
+.other-patient-card__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.other-patient-card__vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 12px;
+}
+
+.other-patient-card__vital {
+  display: flex;
+  flex-direction: column;
+}
+
+.other-patient-card__vital-num {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.2;
+}
+
+.other-patient-card__vital-lbl {
+  font-size: 10.5px;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.other-patient-card__graph {
+  width: 80px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.mini-waveform {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===========================================================================
+   5. BRAND FOOTER BAR (CLEAN & MINIMAL)
+   =========================================================================== */
+.live-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 22px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  font-size: 13px;
+  color: #64748B;
+  margin-top: 8px;
+}
+
+.live-footer-bar__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-footer-bar__icon {
+  color: var(--blue);
+}
+
+.live-footer-bar__right {
+  font-size: 12.5px;
+  color: #94A3B8;
+}
+
+/* ===========================================================================
+   RESPONSIVENESS
+   =========================================================================== */
 @media (max-width: 1279px) {
-  .live-monitor__grid {
+  .primary-patient-card__vitals {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .other-patients__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .live-header__mobile-toggle {
+    display: flex;
+  }
+
+  .live-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .live-header__right {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .live-header__datetime {
+    border-left: none;
+    padding-left: 0;
+    align-items: flex-start;
+  }
+
+  .live-hero-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px;
+  }
+
+  .live-hero-card__quote {
+    text-align: left;
+  }
+
+  .primary-patient-card {
+    padding: 20px 18px;
+  }
+
+  .primary-patient-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .primary-patient-card__meta {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .primary-patient-card__vitals {
     grid-template-columns: 1fr;
+  }
+
+  .other-patients__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .live-footer-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }

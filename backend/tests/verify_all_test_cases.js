@@ -7,7 +7,7 @@ import { recordTelemetrySchema } from '../src/validators/telemetry.validator.js'
 // ---------------------------------------------------------------------------
 
 // Firmware Vitals & Motion Logic Simulator
-function simulateFirmwareLogic({ ir, red, beatsHistory = [], millis = 10000, maxAccelMag = 9.8, minAccelMag = 9.8, latchedFall = false }) {
+function simulateFirmwareLogic({ ir, red, beatsHistory = [], millis = 10000, maxAccelMag = 9.8, minAccelMag = 9.8, latchedFall = false, latchedUpwardPull = false }) {
   const IR_FINGER_THRESHOLD = 5000;
   const RATE_SIZE = 4;
   let hasFinger = ir > IR_FINGER_THRESHOLD;
@@ -39,6 +39,8 @@ function simulateFirmwareLogic({ ir, red, beatsHistory = [], millis = 10000, max
 
   if (fallDetected) {
     motionState = "FALL";
+  } else if (latchedUpwardPull) {
+    motionState = "FAST_UPWARD_PULL";
   } else if (accelDelta > 6.0) {
     motionState = "RUNNING";
   } else if (accelDelta > 2.8) {
@@ -202,6 +204,12 @@ test('TC-09: Motion Classifier - Moderate shake -> WALKING', () => {
 test('TC-10: Motion Classifier - Vigorous shake -> RUNNING', () => {
   const result = simulateFirmwareLogic({ ir: 0, red: 0, maxAccelMag: 18.0, minAccelMag: 9.8 });
   assert.equal(result.motionState, 'RUNNING');
+});
+
+test('TC-10b: Motion Classifier - Fast Upward Pull -> FAST_UPWARD_PULL (No Fall Alert)', () => {
+  const result = simulateFirmwareLogic({ ir: 0, red: 0, maxAccelMag: 19.5, minAccelMag: 9.8, latchedUpwardPull: true, latchedFall: false });
+  assert.equal(result.motionState, 'FAST_UPWARD_PULL');
+  assert.equal(result.fallDetected, false);
 });
 
 test('TC-11: Alert Threshold - HR = 35 BPM -> LOW_HEART_RATE CRITICAL', () => {

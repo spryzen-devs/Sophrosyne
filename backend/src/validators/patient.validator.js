@@ -7,6 +7,14 @@ import { z } from 'zod';
 const GenderEnum = z.enum(['MALE', 'FEMALE', 'OTHER']);
 const PatientStatusEnum = z.enum(['ACTIVE', 'INACTIVE']);
 
+const strictPhoneSchema = z
+  .string()
+  .refine((val) => !val || /^\d{10}$/.test(val.trim()), {
+    message: 'Phone number must be exactly 10 digits',
+  })
+  .optional()
+  .nullable();
+
 export const createPatientSchema = z.object({
   body: z.object({
     name: z.string().optional(),
@@ -18,8 +26,8 @@ export const createPatientSchema = z.object({
       message: 'Invalid date format',
     }).optional(),
     bloodGroup: z.string().optional(),
-    phone: z.string().optional(),
-    emergencyContact: z.string().optional(),
+    phone: strictPhoneSchema,
+    emergencyContact: strictPhoneSchema,
     address: z.string().optional(),
     status: PatientStatusEnum.default('ACTIVE'),
     assignedDoctorId: z.string().uuid().nullable().optional(),
@@ -37,8 +45,8 @@ export const updatePatientSchema = z.object({
       message: 'Invalid date format',
     }).optional(),
     bloodGroup: z.string().optional(),
-    phone: z.string().optional(),
-    emergencyContact: z.string().optional(),
+    phone: strictPhoneSchema,
+    emergencyContact: strictPhoneSchema,
     address: z.string().optional(),
     status: PatientStatusEnum.optional(),
     assignedDoctorId: z.string().uuid().nullable().optional(),

@@ -1,6 +1,7 @@
 import telemetryRepository from '../repositories/telemetry.repository.js';
 import alertService from './alert.service.js';
 import notificationService from './notification.service.js';
+import prisma from '../config/prisma.js';
 
 /**
  * Telemetry Service
@@ -12,7 +13,7 @@ class TelemetryService {
    * @returns {Promise<Object>}
    */
   async recordTelemetry(telemetryData) {
-    const { deviceCode, ...metrics } = telemetryData;
+    const { deviceCode, patientId, patientCode, ...metrics } = telemetryData;
 
     // Verify device exists
     const device = await telemetryRepository.findDeviceByCode(deviceCode);
@@ -22,11 +23,42 @@ class TelemetryService {
       throw error;
     }
 
+    // Verify device is assigned to a patient
+    if (!device.patientId) {
+      const error = new Error(`Device ${deviceCode} is not assigned to any patient. Telemetry cannot be recorded.`);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // If patientId is supplied in request payload, verify match
+    if (patientId && device.patientId !== patientId) {
+      const error = new Error(`Patient ID mismatch: Device ${deviceCode} is not assigned to patient ${patientId}`);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // If patientCode is supplied in request payload, verify match
+    if (patientCode && device.patient?.patientCode && device.patient.patientCode !== patientCode) {
+      const error = new Error(`Patient code mismatch: Device ${deviceCode} is not assigned to patient ${patientCode}`);
+      error.statusCode = 400;
+      throw error;
+    }
+
     // Create telemetry record
     const telemetry = await telemetryRepository.create({
       ...metrics,
       deviceId: device.id,
       recordedAt: new Date(),
+    });
+
+    // Update device online status, battery level, and last seen
+    await prisma.device.update({
+      where: { id: device.id },
+      data: {
+        status: 'ONLINE',
+        lastSeen: new Date(),
+        ...(metrics.battery != null && { batteryLevel: metrics.battery }),
+      },
     });
 
     // Notify real-time clients

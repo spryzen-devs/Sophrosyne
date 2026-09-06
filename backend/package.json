@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "simulate": "node simulator/simulator.js",
+    "send-telemetry": "node send-telemetry.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

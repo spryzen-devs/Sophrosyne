@@ -63,13 +63,23 @@ class TelemetryRepository {
   }
 
   /**
-   * Find device by its code
+   * Find device by its code (including assigned patient details)
    * @param {string} deviceCode
    * @returns {Promise<Object|null>}
    */
   async findDeviceByCode(deviceCode) {
     return prisma.device.findUnique({
       where: { deviceCode },
+      include: {
+        patient: {
+          select: {
+            id: true,
+            patientCode: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
   }
 }

@@ -49,11 +49,26 @@ export default function Dashboard() {
     refetch: refetchLivePatients,
   } = useDashboardLivePatients();
 
+  const stats = overview?.data?.data || overview?.data || overview || {};
+  const alerts = recentAlerts?.data?.data || recentAlerts?.data || recentAlerts?.alerts || (Array.isArray(recentAlerts) ? recentAlerts : []);
+  const deviceList = deviceStatus?.data?.data || deviceStatus?.data || deviceStatus || (Array.isArray(deviceStatus) ? deviceStatus : []);
+  const patients = livePatients?.data?.data || livePatients?.data || livePatients?.patients || (Array.isArray(livePatients) ? livePatients : []);
+
+  const [selectedPatientId, setSelectedPatientId] = useState('');
+
+  const activePatientId = selectedPatientId || patients[0]?.id || patients[0]?.patientId;
+  const currentPatient = patients.find((p) => (p.id || p.patientId) === activePatientId) || patients[0];
+  const currentDevice = currentPatient?.device || currentPatient?.devices?.[0];
+  const currentDeviceId = currentDevice?.id;
+
   const {
     data: telemetryTrendResult,
     loading: trendLoading,
     refetch: refetchTrend,
-  } = useFetch(() => telemetryService.getAll({ limit: 15 }), []);
+  } = useFetch(
+    () => (currentDeviceId ? telemetryService.getHistory(currentDeviceId, { limit: 20 }) : telemetryService.getAll({ limit: 20 })),
+    [currentDeviceId]
+  );
 
   const handleSocketUpdate = useCallback(() => {
     refetchOverview();
@@ -68,10 +83,6 @@ export default function Dashboard() {
     onAlert: handleSocketUpdate,
   });
 
-  const stats = overview?.data?.data || overview?.data || overview || {};
-  const alerts = recentAlerts?.data?.data || recentAlerts?.data || recentAlerts?.alerts || (Array.isArray(recentAlerts) ? recentAlerts : []);
-  const deviceList = deviceStatus?.data?.data || deviceStatus?.data || deviceStatus || (Array.isArray(deviceStatus) ? deviceStatus : []);
-  const patients = livePatients?.data?.data || livePatients?.data || livePatients?.patients || (Array.isArray(livePatients) ? livePatients : []);
   const rawTelemetry = telemetryTrendResult?.data?.data || telemetryTrendResult?.data || (Array.isArray(telemetryTrendResult) ? telemetryTrendResult : []);
 
   const onlineCount = stats.onlineDevices ?? (Array.isArray(deviceList) ? deviceList.filter((d) => d.status === 'ONLINE').length : 0);
@@ -263,13 +274,96 @@ export default function Dashboard() {
       </div>
 
       {/* Telemetry Trends Chart */}
-      <Card title="Telemetry Vitals Trends">
+      <Card
+        title="Telemetry Vitals Trends"
+        action={
+          patients.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>
+                Patient:
+              </span>
+              <select
+                value={activePatientId || ''}
+                onChange={(e) => setSelectedPatientId(e.target.value)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color, #D1D5DB)',
+                  backgroundColor: 'var(--white, #FFFFFF)',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: 'var(--text-primary, #111827)',
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+              >
+                {patients.map((p) => {
+                  const pId = p.id || p.patientId;
+                  const pName = p.patientName || `${p.firstName} ${p.lastName}`;
+                  const devCode = p.device?.deviceCode || p.devices?.[0]?.deviceCode || 'No device';
+                  return (
+                    <option key={pId} value={pId}>
+                      {pName} ({p.patientCode} — {devCode})
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          )
+        }
+      >
+        {currentPatient && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 16,
+              padding: '10px 16px',
+              backgroundColor: '#F8F9FA',
+              border: '1px solid #E5E7EB',
+              borderRadius: '10px',
+              fontSize: 13,
+            }}
+          >
+            <div>
+              <span style={{ color: 'var(--text-secondary)', marginRight: 6 }}>Currently Viewing:</span>
+              <strong style={{ color: 'var(--text-primary)', fontSize: 14 }}>
+                {currentPatient.patientName || `${currentPatient.firstName} ${currentPatient.lastName}`}
+              </strong>
+              <span style={{ color: 'var(--blue)', marginLeft: 8, fontWeight: 500 }}>
+                ({currentPatient.patientCode})
+              </span>
+            </div>
+            {currentDevice && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {(() => {
+                  const isCurrentActive = Boolean(
+                    currentPatient?.latestTelemetry?.recordedAt &&
+                    (Date.now() - new Date(currentPatient.latestTelemetry.recordedAt).getTime() < 30000)
+                  );
+                  return (
+                    <>
+                      <StatusDot status={isCurrentActive ? 'online' : 'offline'} />
+                      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>
+                        Assigned Device: <strong style={{ color: 'var(--text-primary)' }}>{currentDevice.deviceCode}</strong> ({isCurrentActive ? 'ONLINE' : 'OFFLINE'})
+                      </span>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        )}
+
         {trendLoading ? (
           <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div className="loader__spinner" style={{ width: 24, height: 24, border: '2px solid var(--border-light)', borderTopColor: 'var(--blue)', borderRadius: '50%', animation: 'loader-spin 0.7s linear infinite' }} />
           </div>
         ) : chartData.length === 0 ? (
-          <p style={{ color: 'var(--text-secondary)', fontSize: 14, textAlign: 'center', padding: 48 }}>No telemetry trends available</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, textAlign: 'center', padding: 48 }}>
+            No telemetry trends available for {currentPatient ? (currentPatient.patientName || `${currentPatient.firstName} ${currentPatient.lastName}`) : 'selected patient'}
+          </p>
         ) : (
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={chartData}>
@@ -321,9 +415,13 @@ export default function Dashboard() {
           <div className="dashboard__live-grid">
             {patients.map((p) => {
               const dev = p.device || p.devices?.[0];
-              const hr = p.latestTelemetry?.heartRate;
-              const spo2 = p.latestTelemetry?.spo2;
-              const temp = p.latestTelemetry?.temperature;
+              const isPatientActive = Boolean(
+                p.latestTelemetry?.recordedAt &&
+                (Date.now() - new Date(p.latestTelemetry.recordedAt).getTime() < 30000)
+              );
+              const hr = isPatientActive ? p.latestTelemetry?.heartRate : null;
+              const spo2 = isPatientActive ? p.latestTelemetry?.spo2 : null;
+              const temp = isPatientActive ? p.latestTelemetry?.temperature : null;
 
               return (
                 <div
@@ -335,25 +433,19 @@ export default function Dashboard() {
                     <span className="live-patient-card__name">
                       {p.patientName || `${p.firstName} ${p.lastName}`}
                     </span>
-                    <StatusDot status={dev?.status?.toLowerCase() === 'online' ? 'online' : 'offline'} />
+                    <StatusDot status={isPatientActive ? 'online' : 'offline'} />
                   </div>
                   <div className="live-patient-card__code">{p.patientCode}</div>
                   <div className="live-patient-card__vitals">
-                    {hr != null && (
-                      <span className="live-patient-card__vital">
-                        HR {hr} BPM
-                      </span>
-                    )}
-                    {spo2 != null && (
-                      <span className="live-patient-card__vital">
-                        SpO2 {spo2}%
-                      </span>
-                    )}
-                    {temp != null && (
-                      <span className="live-patient-card__vital">
-                        Room Temp {Number(temp).toFixed(1)}°C
-                      </span>
-                    )}
+                    <span className="live-patient-card__vital">
+                      HR {hr != null ? `${hr} BPM` : '—'}
+                    </span>
+                    <span className="live-patient-card__vital">
+                      SpO2 {spo2 != null ? `${spo2}%` : '—'}
+                    </span>
+                    <span className="live-patient-card__vital">
+                      Temp {temp != null ? `${Number(temp).toFixed(1)}°C` : '—'}
+                    </span>
                   </div>
                 </div>
               );

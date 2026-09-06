@@ -14,22 +14,23 @@ class TelemetrySimulator {
   /**
    * Initialize simulated devices
    */
-  initDevices() {
-    for (let i = 1; i <= config.DEVICE_COUNT; i++) {
-      const deviceCode = `${config.DEVICE_PREFIX}${i.toString().padStart(4, '0')}`;
-      const profile = getProfile(i - 1);
-      
+  async initDevices() {
+    this.devices = [];
+    const defaultCodes = ['DEV-001', 'DEV-0001', 'DEV-0002', 'DEV-0003'];
+    
+    defaultCodes.forEach((code, idx) => {
+      const profile = getProfile(idx);
       this.devices.push({
-        deviceCode,
+        deviceCode: code,
         profile,
         currentHeartRate: profile.baseHeartRate,
         currentSpo2: profile.baseSpo2,
         currentTemperature: profile.baseTemperature || 36.6,
         currentBattery: profile.baseBattery,
-        accel: { x: 0, y: 0, z: 9.8 } // Start at rest
       });
-    }
-    console.log(`✅ Initialized ${this.devices.length} devices for simulation.`);
+    });
+
+    console.log(`✅ Initialized ${this.devices.length} devices for simulation: ${this.devices.map(d => d.deviceCode).join(', ')}`);
   }
 
   /**

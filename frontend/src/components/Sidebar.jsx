@@ -5,6 +5,7 @@ import {
   Cpu,
   Bell,
   Activity,
+  Heart,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { getInitials } from '../utils/formatters';
@@ -45,9 +46,9 @@ export default function Sidebar({ open, onClose }) {
       <aside className={`sidebar ${open ? 'sidebar--open' : ''}`}>
         <div className="sidebar__brand">
           <span className="sidebar__brand-icon">
-            <Activity size={24} strokeWidth={2.5} />
+            <Activity size={22} strokeWidth={2.8} />
           </span>
-          <span className="sidebar__brand-name">SENTINEL</span>
+          <span className="sidebar__brand-name">Sophrosyne</span>
         </div>
 
         <nav className="sidebar__nav">
@@ -91,6 +92,10 @@ export default function Sidebar({ open, onClose }) {
           <button className="sidebar__logout" onClick={logout}>
             Sign out
           </button>
+          <div className="sidebar__tagline">
+            <Heart size={12} className="sidebar__tagline-icon" />
+            <span>Your care, held with intention.</span>
+          </div>
         </div>
       </aside>
     </>

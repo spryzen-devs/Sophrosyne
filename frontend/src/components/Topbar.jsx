@@ -1,4 +1,5 @@
 import { Bell, Menu } from 'lucide-react';
+import FullscreenToggle from './FullscreenToggle';
 import './Topbar.css';
 
 /**
@@ -17,7 +18,8 @@ export default function Topbar({ title, hasAlerts = false, onMenuClick }) {
         </button>
         <h1 className="topbar__title">{title}</h1>
       </div>
-      <div className="topbar__right">
+      <div className="topbar__right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <FullscreenToggle variant="topbar" showText={false} />
         <button className="topbar__bell" aria-label="Notifications">
           <Bell size={20} />
           {hasAlerts && <span className="topbar__bell-dot" />}

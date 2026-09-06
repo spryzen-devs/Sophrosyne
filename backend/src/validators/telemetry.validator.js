@@ -4,11 +4,13 @@ import { z } from 'zod';
  * Telemetry Zod Validation Schemas
  */
 
-const MotionStateEnum = z.enum(['RESTING', 'WALKING', 'RUNNING', 'FALL']);
+const MotionStateEnum = z.enum(['RESTING', 'WALKING', 'RUNNING', 'FALL', 'FAST_UPWARD_PULL']);
 
 export const recordTelemetrySchema = z.object({
   body: z.object({
     deviceCode: z.string().min(1, 'Device code is required'),
+    patientId: z.string().uuid('Invalid patient ID format').optional(),
+    patientCode: z.string().optional(),
     heartRate: z.number().nullable().optional(),
     spo2: z.number().nullable().optional(),
     temperature: z.number().nullable().optional(),

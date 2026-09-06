@@ -23,7 +23,7 @@ export default function DashboardLayout() {
 
   // Get page title from route
   const basePath = '/' + location.pathname.split('/').filter(Boolean)[0];
-  const title = pageTitles[basePath] || 'Sentinel';
+  const title = pageTitles[basePath] || 'Sophrosyne';
 
   const handleAlertSocket = useCallback((alert) => {
     if (alert && (alert.severity === 'CRITICAL' || alert.severity === 'HIGH')) {
@@ -81,16 +81,22 @@ export default function DashboardLayout() {
     return <Navigate to="/login" replace />;
   }
 
+  const isLiveMonitor = location.pathname === '/live-monitor';
+
   return (
     <div className="dashboard-layout">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <Topbar
-        title={title}
-        hasAlerts={hasAlerts}
-        onMenuClick={() => setSidebarOpen(!sidebarOpen)}
-      />
-      <main className="dashboard-layout__content">
-        <Outlet />
+      
+      {!isLiveMonitor && (
+        <Topbar
+          title={title}
+          hasAlerts={hasAlerts}
+          onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+        />
+      )}
+
+      <main className={`dashboard-layout__content ${isLiveMonitor ? 'dashboard-layout__content--live' : ''}`}>
+        <Outlet context={{ onMenuClick: () => setSidebarOpen((prev) => !prev), hasAlerts }} />
       </main>
     </div>
   );

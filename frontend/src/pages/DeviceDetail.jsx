@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
 import { useFetch } from '../hooks/useFetch';
+import { useLaptopBattery } from '../hooks/useLaptopBattery';
 import deviceService from '../services/device.service';
 import telemetryService from '../services/telemetry.service';
 import patientService from '../services/patient.service';
@@ -13,7 +14,7 @@ import StatusDot from '../components/StatusDot';
 import Loader from '../components/Loader';
 import Button from '../components/Button';
 import Select from '../components/Select';
-import { formatDate, formatDateTime, timeAgo } from '../utils/formatters';
+import { formatDate, formatDateTime, timeAgo, formatLastSignalText } from '../utils/formatters';
 import toast from 'react-hot-toast';
 import './DeviceDetail.css';
 
@@ -27,6 +28,7 @@ export default function DeviceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { hasRole } = useAuth();
+  const laptopBattery = useLaptopBattery();
   const [timeRange, setTimeRange] = useState('1h');
   const [assignPatientId, setAssignPatientId] = useState('');
   const [assigning, setAssigning] = useState(false);
@@ -94,6 +96,15 @@ export default function DeviceDetail() {
     ...allPatients.map((p) => ({ value: p.id, label: `${p.firstName} ${p.lastName} (${p.patientCode})` })),
   ];
 
+  const isDevActive = Boolean(
+    device.lastSeen &&
+    (Date.now() - new Date(device.lastSeen).getTime() < 30000)
+  );
+
+  const displayBattery = isDevActive
+    ? (device.batteryLevel ?? laptopBattery ?? 100)
+    : (laptopBattery ?? device.batteryLevel ?? 100);
+
   return (
     <div className="device-detail">
       {/* Header */}
@@ -104,8 +115,8 @@ export default function DeviceDetail() {
         <div className="device-detail__title-group">
           <div className="device-detail__name">
             {device.deviceCode}
-            <Badge variant={device.status?.toLowerCase() === 'online' ? 'online' : 'offline'}>
-              {device.status}
+            <Badge variant={isDevActive ? 'online' : 'offline'}>
+              {isDevActive ? 'ONLINE' : 'OFFLINE'}
             </Badge>
           </div>
         </div>
@@ -128,11 +139,11 @@ export default function DeviceDetail() {
           </div>
           <div className="device-detail__field">
             <span className="device-detail__field-label">Battery</span>
-            <span className="device-detail__field-value">{device.batteryLevel != null ? `${device.batteryLevel}%` : '—'}</span>
+            <span className="device-detail__field-value">{isDevActive && displayBattery != null ? `${displayBattery}%` : '—'}</span>
           </div>
           <div className="device-detail__field">
             <span className="device-detail__field-label">Last Seen</span>
-            <span className="device-detail__field-value">{timeAgo(device.lastSeen)}</span>
+            <span className="device-detail__field-value">{formatLastSignalText(device.lastSeen)}</span>
           </div>
           <div className="device-detail__field">
             <span className="device-detail__field-label">Registered</span>

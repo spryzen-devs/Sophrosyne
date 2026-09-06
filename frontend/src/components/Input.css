@@ -1,45 +1,92 @@
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
 .input-group__label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: #14213D;
+  letter-spacing: -0.01em;
+}
+
+.input-group__icon-wrapper {
+  position: relative;
+  width: 100%;
 }
 
 .input-group__field {
-  height: 40px;
-  padding: 0 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  height: 56px !important;
+  padding: 0 16px;
+  border: 1px solid #DDE5EF;
+  border-radius: 12px;
   font-size: 14px;
+  font-weight: 450;
   line-height: 20px;
-  color: var(--text-primary);
-  background-color: var(--white);
-  transition: border-color 150ms ease;
+  color: #14213D;
+  background-color: #FFFFFF !important;
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   outline: none;
   width: 100%;
 }
 
+/* Chrome/Edge Autofill Override */
+.input-group__field:-webkit-autofill,
+.input-group__field:-webkit-autofill:hover, 
+.input-group__field:-webkit-autofill:focus, 
+.input-group__field:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #FFFFFF inset !important;
+  -webkit-text-fill-color: #14213D !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.input-group__field:hover {
+  border-color: #CBD5E1;
+}
+
 .input-group__field:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 2px var(--blue-light);
+  border-color: #2F73E8;
 }
 
 .input-group__field--error {
-  border-color: var(--red);
-}
-
-.input-group__field--error:focus {
-  box-shadow: 0 0 0 2px var(--red-light);
+  border-color: #E11D48;
+  background-color: #FFF1F2 !important;
 }
 
 .input-group__error {
   font-size: 12px;
-  color: var(--red);
+  font-weight: 500;
+  color: #E11D48;
+}
+
+.input-group__field--with-icon {
+  padding-left: 48px !important;
+}
+
+.input-group__icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #7185A3;
+  display: flex;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.input-group__suffix {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #7185A3;
+  display: flex;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  z-index: 2;
 }
 
 .input-group__field--with-icon {

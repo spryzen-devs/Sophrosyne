@@ -19,6 +19,7 @@ export const MOTION_STATES = {
   WALKING: 'WALKING',
   RUNNING: 'RUNNING',
   FALL: 'FALL',
+  FAST_UPWARD_PULL: 'FAST_UPWARD_PULL',
 };
 
 export const SEVERITY = {

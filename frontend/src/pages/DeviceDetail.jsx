@@ -11,10 +11,11 @@ import patientService from '../services/patient.service';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
 import StatusDot from '../components/StatusDot';
+import VitalCard from '../components/VitalCard';
 import Loader from '../components/Loader';
 import Button from '../components/Button';
 import Select from '../components/Select';
-import { formatDate, formatDateTime, timeAgo, formatLastSignalText } from '../utils/formatters';
+import { formatDate, formatDateTime, timeAgo, formatLastSignalText, formatDurationHHMMSS } from '../utils/formatters';
 import toast from 'react-hot-toast';
 import './DeviceDetail.css';
 
@@ -46,6 +47,11 @@ export default function DeviceDetail() {
     [id, timeRange, device?.id]
   );
 
+  const { data: motionStatsData, loading: motionStatsLoading } = useFetch(
+    () => device ? telemetryService.getDailyMotionStats(device.id || id) : Promise.resolve(null),
+    [device]
+  );
+
   const { data: patientsData } = useFetch(
     () => hasRole('ADMIN') ? patientService.getAll({ limit: 100 }) : Promise.resolve(null),
     []
@@ -53,6 +59,7 @@ export default function DeviceDetail() {
 
   const history = historyData?.telemetry || historyData?.data || (Array.isArray(historyData) ? historyData : []);
   const allPatients = patientsData?.patients || patientsData?.data || (Array.isArray(patientsData) ? patientsData : []);
+  const dailyMotion = motionStatsData?.data || motionStatsData || { RESTING: 0, WALKING: 0, RUNNING: 0 };
 
   const chartData = history.map((t) => ({
     time: new Date(t.recordedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -98,7 +105,7 @@ export default function DeviceDetail() {
 
   const isDevActive = Boolean(
     device.lastSeen &&
-    (Date.now() - new Date(device.lastSeen).getTime() < 30000)
+    (Date.now() - new Date(device.lastSeen).getTime() < 5000)
   );
 
   const displayBattery = isDevActive
@@ -180,6 +187,31 @@ export default function DeviceDetail() {
           </div>
         ) : (
           <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>No patient assigned</p>
+        )}
+      </Card>
+
+      {/* Today's Activity */}
+      <Card title="Today's Activity">
+        {motionStatsLoading ? (
+          <div style={{ padding: 20, textAlign: 'center' }}>Loading activity...</div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 'var(--spacing-md)' }}>
+            <VitalCard
+              label="Resting Time"
+              value={formatDurationHHMMSS(dailyMotion.RESTING)}
+              status="normal"
+            />
+            <VitalCard
+              label="Walking Time"
+              value={formatDurationHHMMSS(dailyMotion.WALKING)}
+              status="normal"
+            />
+            <VitalCard
+              label="Running Time"
+              value={formatDurationHHMMSS(dailyMotion.RUNNING)}
+              status="normal"
+            />
+          </div>
         )}
       </Card>
 

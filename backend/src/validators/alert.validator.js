@@ -5,7 +5,16 @@ import { z } from 'zod';
  */
 
 const SeverityEnum = z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']);
-const AlertTypeEnum = z.enum(['LOW_HEART_RATE', 'HIGH_HEART_RATE', 'LOW_SPO2', 'FALL_DETECTED', 'LOW_BATTERY']);
+const AlertTypeEnum = z.enum([
+  'LOW_HEART_RATE', 
+  'HIGH_HEART_RATE', 
+  'LOW_SPO2', 
+  'HIGH_TEMPERATURE',
+  'FALL_DETECTED', 
+  'LOW_BATTERY',
+  'DEVICE_OFFLINE',
+  'DEVICE_TAMPERED'
+]);
 
 export const getAlertsQuerySchema = z.object({
   query: z.object({

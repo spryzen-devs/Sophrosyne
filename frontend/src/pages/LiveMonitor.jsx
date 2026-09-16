@@ -311,7 +311,7 @@ export default function LiveMonitor() {
   const isLiveActive = Boolean(
     primaryLive &&
     primaryLive.receivedAt &&
-    (Date.now() - new Date(primaryLive.receivedAt).getTime() < 30000)
+    (Date.now() - new Date(primaryLive.receivedAt).getTime() < 5000)
   );
 
   const hr = isLiveActive ? primaryLive.heartRate : null;
@@ -593,7 +593,7 @@ export default function LiveMonitor() {
                   const oIsActive = Boolean(
                     oLive &&
                     oLive.receivedAt &&
-                    (Date.now() - new Date(oLive.receivedAt).getTime() < 30000)
+                    (Date.now() - new Date(oLive.receivedAt).getTime() < 5000)
                   );
 
                   const oHr = oIsActive ? oLive.heartRate : null;

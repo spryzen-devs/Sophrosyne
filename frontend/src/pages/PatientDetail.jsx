@@ -19,7 +19,7 @@ import Button from '../components/Button';
 import Modal from '../components/Modal';
 import Input from '../components/Input';
 import Select from '../components/Select';
-import { formatDate, formatEnum, timeAgo, formatAlertType, getHeartRateStatus, getSpo2Status, getTemperatureStatus } from '../utils/formatters';
+import { formatDate, formatEnum, timeAgo, formatAlertType, getHeartRateStatus, getSpo2Status, getTemperatureStatus, formatDurationHHMMSS } from '../utils/formatters';
 import { GENDERS, BLOOD_GROUPS } from '../utils/constants';
 import toast from 'react-hot-toast';
 import './PatientDetail.css';
@@ -50,6 +50,11 @@ export default function PatientDetail() {
 
   const { data: alertsData, loading: alertsLoading, refetch: refetchAlerts } = useFetch(
     () => alertService.getByPatient(id), [id]
+  );
+
+  const { data: motionStatsData, loading: motionStatsLoading } = useFetch(
+    () => deviceId ? telemetryService.getDailyMotionStats(deviceId) : Promise.resolve(null),
+    [deviceId]
   );
 
   const handleTelemetryEvent = useCallback((data) => {
@@ -127,6 +132,46 @@ export default function PatientDetail() {
 
   const currentTelemetry = liveTelemetry || {};
   const alerts = alertsData?.alerts || alertsData?.data || (Array.isArray(alertsData) ? alertsData : []);
+  const [liveDailyMotion, setLiveDailyMotion] = useState({ RESTING: 0, WALKING: 0, RUNNING: 0 });
+
+  useEffect(() => {
+    const stats = motionStatsData?.data || motionStatsData || { RESTING: 0, WALKING: 0, RUNNING: 0 };
+    setLiveDailyMotion(stats);
+  }, [motionStatsData]);
+
+  const fetchedLatestTelemetry = telemetryData?.data || telemetryData?.telemetry || (telemetryData?.recordedAt ? telemetryData : null);
+
+  const activeTelemetry = (liveTelemetry && liveTelemetry.recordedAt && (Date.now() - new Date(liveTelemetry.recordedAt).getTime() < 5000))
+    ? liveTelemetry
+    : (fetchedLatestTelemetry && fetchedLatestTelemetry.recordedAt && (Date.now() - new Date(fetchedLatestTelemetry.recordedAt).getTime() < 5000))
+    ? fetchedLatestTelemetry
+    : null;
+
+  const isDeviceActive = Boolean(activeTelemetry);
+
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    let interval;
+    if (isDeviceActive && activeTelemetry?.recordedAt) {
+      interval = setInterval(() => {
+        // Stop timer if 5s have passed since last ping
+        if (Date.now() - new Date(activeTelemetry.recordedAt).getTime() > 5000) {
+          clearInterval(interval);
+          setTick(t => t + 1); // Force re-render so vitals become null immediately
+          return;
+        }
+        
+        if (activeTelemetry.motionState) {
+          setLiveDailyMotion((prev) => ({
+            ...prev,
+            [activeTelemetry.motionState]: (prev[activeTelemetry.motionState] || 0) + 1
+          }));
+        }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isDeviceActive, activeTelemetry?.motionState, activeTelemetry?.recordedAt]);
 
   if (patientLoading) return <Loader />;
   if (!patient) return <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: 48 }}>Patient not found</p>;
@@ -235,17 +280,6 @@ export default function PatientDetail() {
 
   const doctorName = patient.assignedDoctor?.fullName;
   const formattedDoctorName = doctorName ? (doctorName.startsWith('Dr.') ? doctorName : `Dr. ${doctorName}`) : 'Unassigned';
-
-  const fetchedLatestTelemetry = telemetryData?.data || telemetryData?.telemetry || (telemetryData?.recordedAt ? telemetryData : null);
-
-  const activeTelemetry = (liveTelemetry && liveTelemetry.recordedAt && (Date.now() - new Date(liveTelemetry.recordedAt).getTime() < 30000))
-    ? liveTelemetry
-    : (fetchedLatestTelemetry && fetchedLatestTelemetry.recordedAt && (Date.now() - new Date(fetchedLatestTelemetry.recordedAt).getTime() < 30000))
-    ? fetchedLatestTelemetry
-    : null;
-
-  // Determine if live telemetry is actively arriving over USB/socket (within last 30s)
-  const isDeviceActive = Boolean(activeTelemetry);
 
   const lastRecordedAt = liveTelemetry?.recordedAt || fetchedLatestTelemetry?.recordedAt || device?.lastSeen || null;
 
@@ -382,6 +416,33 @@ export default function PatientDetail() {
           />
         </div>
       </Card>
+
+      {/* Today's Activity */}
+      {device && (
+        <Card title="Today's Activity">
+          {motionStatsLoading ? (
+            <div style={{ padding: 20, textAlign: 'center' }}>Loading activity...</div>
+          ) : (
+            <div className="patient-detail__vitals-row">
+              <VitalCard
+                label="Resting Time"
+                value={formatDurationHHMMSS(liveDailyMotion.RESTING)}
+                status="normal"
+              />
+              <VitalCard
+                label="Walking Time"
+                value={formatDurationHHMMSS(liveDailyMotion.WALKING)}
+                status="normal"
+              />
+              <VitalCard
+                label="Running Time"
+                value={formatDurationHHMMSS(liveDailyMotion.RUNNING)}
+                status="normal"
+              />
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Alert History */}
       <Card title="Alert History" flush>

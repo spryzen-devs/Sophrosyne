@@ -94,7 +94,7 @@ export default function Devices() {
       key: 'status',
       label: 'Status',
       render: (_, row) => {
-        const isDevActive = Boolean(row.lastSeen && (Date.now() - new Date(row.lastSeen).getTime() < 30000));
+        const isDevActive = Boolean(row.lastSeen && (Date.now() - new Date(row.lastSeen).getTime() < 5000));
         return (
           <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <StatusDot status={isDevActive ? 'online' : 'offline'} />
@@ -107,7 +107,7 @@ export default function Devices() {
       key: 'batteryLevel',
       label: 'Battery',
       render: (val, row) => {
-        const isDevActive = Boolean(row.lastSeen && (Date.now() - new Date(row.lastSeen).getTime() < 30000));
+        const isDevActive = Boolean(row.lastSeen && (Date.now() - new Date(row.lastSeen).getTime() < 5000));
         return isDevActive && (val ?? laptopBattery) != null ? `${val ?? laptopBattery}%` : '—';
       },
     },

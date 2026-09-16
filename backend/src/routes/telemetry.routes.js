@@ -32,4 +32,7 @@ router.get('/latest/:deviceId', telemetryController.getLatestTelemetry);
 // GET /api/v1/telemetry/history/:deviceId - Get telemetry history
 router.get('/history/:deviceId', validate(getTelemetryQuerySchema), telemetryController.getTelemetryHistory);
 
+// GET /api/v1/telemetry/daily-motion/:deviceId - Get daily motion stats
+router.get('/daily-motion/:deviceId', telemetryController.getDailyMotionStats);
+
 export default router;

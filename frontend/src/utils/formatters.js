@@ -126,3 +126,18 @@ export function formatLastSignalText(timestamp) {
   return `${dateStr}, ${timeStr}`;
 }
 
+/**
+ * Format duration in seconds to HH:MM:SS
+ */
+export function formatDurationHHMMSS(totalSeconds) {
+  if (totalSeconds == null || isNaN(totalSeconds)) return '00:00:00';
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  
+  const h = String(hours).padStart(2, '0');
+  const m = String(minutes).padStart(2, '0');
+  const s = String(seconds).padStart(2, '0');
+  
+  return `${h}:${m}:${s}`;
+}

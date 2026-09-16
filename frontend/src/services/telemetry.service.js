@@ -20,6 +20,11 @@ const telemetryService = {
     const response = await api.get(`/telemetry/history/${deviceId}`, { params });
     return response.data;
   },
+
+  async getDailyMotionStats(deviceId) {
+    const response = await api.get(`/telemetry/daily-motion/${deviceId}`);
+    return response.data;
+  },
 };
 
 export default telemetryService;

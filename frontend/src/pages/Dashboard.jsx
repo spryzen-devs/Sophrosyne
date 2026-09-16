@@ -340,7 +340,7 @@ export default function Dashboard() {
                 {(() => {
                   const isCurrentActive = Boolean(
                     currentPatient?.latestTelemetry?.recordedAt &&
-                    (Date.now() - new Date(currentPatient.latestTelemetry.recordedAt).getTime() < 30000)
+                    (Date.now() - new Date(currentPatient.latestTelemetry.recordedAt).getTime() < 5000)
                   );
                   return (
                     <>
@@ -417,7 +417,7 @@ export default function Dashboard() {
               const dev = p.device || p.devices?.[0];
               const isPatientActive = Boolean(
                 p.latestTelemetry?.recordedAt &&
-                (Date.now() - new Date(p.latestTelemetry.recordedAt).getTime() < 30000)
+                (Date.now() - new Date(p.latestTelemetry.recordedAt).getTime() < 5000)
               );
               const hr = isPatientActive ? p.latestTelemetry?.heartRate : null;
               const spo2 = isPatientActive ? p.latestTelemetry?.spo2 : null;

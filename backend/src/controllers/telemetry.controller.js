@@ -120,6 +120,24 @@ class TelemetryController {
       next(error);
     }
   }
+
+  /**
+   * Get daily motion stats for a device
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
+  async getDailyMotionStats(req, res, next) {
+    try {
+      const stats = await telemetryService.getDailyMotionStats(req.params.deviceId);
+      res.status(200).json({
+        success: true,
+        data: stats,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new TelemetryController();

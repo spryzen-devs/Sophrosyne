@@ -151,6 +151,44 @@ class TelemetryService {
   async getTelemetryHistory(deviceId, query) {
     return this.getAllTelemetry({ ...query, deviceId });
   }
+  /**
+   * Get daily motion stats for a device (today's cumulative time in seconds)
+   * @param {string} deviceId
+   * @returns {Promise<Object>}
+   */
+  async getDailyMotionStats(deviceId) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const stats = await prisma.telemetry.groupBy({
+      by: ['motionState'],
+      where: {
+        deviceId,
+        recordedAt: {
+          gte: today,
+        },
+        motionState: {
+          in: ['RESTING', 'WALKING', 'RUNNING'],
+        },
+      },
+      _count: {
+        motionState: true,
+      },
+    });
+
+    const motionStats = {
+      RESTING: 0,
+      WALKING: 0,
+      RUNNING: 0,
+    };
+
+    // Assuming a 3-second ping interval
+    stats.forEach((stat) => {
+      motionStats[stat.motionState] = stat._count.motionState * 3;
+    });
+
+    return motionStats;
+  }
 }
 
 export default new TelemetryService();
